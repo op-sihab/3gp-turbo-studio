@@ -311,6 +311,13 @@ def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
     )
 
     container = Table.grid(expand=False)
+
+    # Vertical breathing room (centers on tall terminal screens)
+    term_h = console.size.height
+    top_pad = max(1, min(6, (term_h - 22) // 3))
+    for _ in range(top_pad):
+        container.add_row(Text(""))
+
     container.add_row(Align.center(logo))
     container.add_row(Align.center(version_tag))
     if flash_message:
@@ -320,7 +327,7 @@ def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
     container.add_row(Align.center(Text("\n")))
     container.add_row(Align.center(actions))
 
-    return container
+    return Align.center(container)
 
 def process_single_input(cmd: str, queue: list) -> tuple:
     """
@@ -537,14 +544,18 @@ def show_extended_menu():
     menu.add_row("[0]", "↩️  [dim white]Back to 3GPBOX Home[/dim white]")
 
     p_info = converter_core.PRESETS.get(CURRENT_PRESET, {})
-    console.print(Panel(
+    menu_w = min(82, console.size.width - 4)
+    panel = Panel(
         menu,
         title=f"[bold white]🛠️ 3GP STUDIO CONTROL PANEL (Profile: {p_info.get('name', 'Sanee S1123 Lite')})[/bold white]",
         border_style=thm["prompt"],
-        box=box.ROUNDED
-    ))
+        box=box.ROUNDED,
+        width=menu_w
+    )
+    console.print(Align.center(panel))
 
-    choice = input("\n👉 Select Option (0-8): ").strip()
+    pad_space = " " * max(0, (console.size.width - menu_w) // 2)
+    choice = input(f"\n{pad_space}👉 Select Option (0-8): ").strip()
     if choice == "1":
         action_local_files()
     elif choice == "2":

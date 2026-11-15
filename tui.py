@@ -17,6 +17,7 @@ if hasattr(sys.stderr, "reconfigure"):
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.align import Align
 from rich.progress import (
     Progress,
     SpinnerColumn,
@@ -50,68 +51,17 @@ CURRENT_PRESET = "standard"
 CURRENT_VOLUME = "1.3"
 CURRENT_SCALE = "neighbor"
 
-ASCII_LOGO = r"""
-  ████████╗██╗   ██╗██████╗ ██████╗      ██████╗  ██████╗ ██████╗ 
-  ╚══██╔══╝██║   ██║██╔══██╗██╔══██╗    ██╔════╝ ██╔════╝ ██╔══██╗
-     ██║   ██║   ██║██████╔╝██████╔╝    ███████╗ ██║  ███╗██████╔╝
-     ██║   ██║   ██║██╔══██╗██╔══██╗    ██╔═══██╗██║   ██║██╔═══╝ 
-     ██║   ╚██████╔╝██║  ██║██████╔╝██╗ ╚██████╔╝╚██████╔╝██║     
-     ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═════╝  ╚═════╝ ╚═╝     """
+# Pixel / Isometric ASCII Banner styled after MovieBox
+ASCII_3GPBOX = r"""
+  ██████╗   ██████╗  ██████╗  ██████╗   ██████╗  ██╗  ██╗
+  ╚════██╗ ██╔════╝  ██╔══██╗ ██╔══██╗ ██╔═══██╗ ╚██╗██╔╝
+   █████╔╝ ██║  ███╗ ██████╔╝ ██████╔╝ ██║   ██║  ╚███╔╝ 
+   ╚═══██╗ ██║   ██║ ██╔═══╝  ██╔══██╗ ██║   ██║  ██╔██╗ 
+  ██████╔╝ ╚██████╔╝ ██║      ██████╔╝ ╚██████╔╝ ██╔╝ ██╗
+  ╚═════╝   ╚═════╝  ╚═╝      ╚═════╝   ╚═════╝  ╚═╝  ╚═╝"""
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
-
-def print_banner():
-    logo_text = Text(ASCII_LOGO, style="bold cyan")
-    
-    sub = Text()
-    sub.append("⚡ ULTRA HIGH-SPEED BUTTON PHONE MEDIA WORKSTATION ⚡\n", style="bold yellow")
-    sub.append("Universal Support: Sanee S1123 Lite • Symphony • Walton • Itel • Nokia • Samsung Guru\n", style="dim white")
-    sub.append("Core i3-4170 (4-Threads) + Intel HD 4400 DXVA2 • 90x-118x Turbo Engine", style="bold green")
-
-    # Status pills table
-    status_table = Table.grid(padding=(0, 2))
-    status_table.add_column(style="bold cyan")
-    status_table.add_column(style="white")
-    status_table.add_column(style="bold magenta")
-    status_table.add_column(style="white")
-
-    p_info = converter_core.PRESETS.get(CURRENT_PRESET, {})
-    status_table.add_row(
-        "Active Profile:", f"{CURRENT_PRESET.upper()} ({p_info.get('resolution', '176x144')})",
-        "Volume Boost:", f"{int(float(CURRENT_VOLUME)*100)}% (Loud & Clear)"
-    )
-    status_table.add_row(
-        "Hardware Accel:", "Intel DXVA2 (GPU Active)",
-        "Scaling Filter:", f"{CURRENT_SCALE.upper()} (fps=15 First)"
-    )
-
-    console.print(Panel(
-        logo_text,
-        subtitle=sub,
-        border_style="bright_cyan",
-        box=box.DOUBLE,
-        padding=(0, 2)
-    ))
-    console.print(Panel(status_table, border_style="dim cyan", box=box.ROUNDED, padding=(0, 2)))
-
-def show_main_menu():
-    menu = Table(box=box.ROUNDED, border_style="bright_blue", show_header=False, expand=True)
-    menu.add_column("Key", style="bold bright_cyan", width=6, justify="center")
-    menu.add_column("Option & Description", style="white")
-
-    menu.add_row("[1]", "🔗 [bold green]YouTube to 3GP Turbo[/bold green] — [dim]Single, multi-link or playlist auto-fetch (144p H.264, 90x speed)[/dim]")
-    menu.add_row("[2]", "📁 [bold yellow]Convert Local Video Files[/bold yellow] — [dim]Convert any local video or entire directory (MP4, MKV, AVI, etc.)[/dim]")
-    menu.add_row("[3]", "⚡ [bold bright_yellow]Instant Drag & Drop Quick-Convert[/bold bright_yellow] — [dim]Paste ANY URL or drag ANY file for 1-step conversion[/dim]")
-    menu.add_row("[4]", "💾 [bold bright_magenta]Transfer to Phone SD Card[/bold bright_magenta] — [dim]Auto-detects USB/MicroSD card & copies 3GP files directly[/dim]")
-    menu.add_row("[5]", "🎬 [bold cyan]3GP File Explorer & Player[/bold cyan] — [dim]Browse, play in media player, inspect streams, or delete 3GP files[/dim]")
-    menu.add_row("[6]", "⚙️  [bold magenta]Profile & Studio Settings[/bold magenta] — [dim]Change target phone model, resolution, volume boost, aspect ratio[/dim]")
-    menu.add_row("[7]", "🚀 [bold red]Hardware Benchmark Test[/bold red] — [dim]Run a 15-second live speed test on CPU & Intel HD 4400 GPU[/dim]")
-    menu.add_row("[8]", "🌐 [bold blue]Open Web Browser Interface[/bold blue] — [dim]Launch local graphical web UI (http://localhost:5000)[/dim]")
-    menu.add_row("[9]", "💡 [bold dim white]Button Phone Guide & Tips[/bold dim white] — [dim]SD card folder layout, supported formats & troubleshooting[/dim]")
-    menu.add_row("[0]", "🚪 [dim red]Exit[/dim red]")
-
-    console.print(Panel(menu, title="[bold white]CONTROL PANEL[/bold white]", border_style="green", box=box.ROUNDED))
 
 def get_removable_drives():
     """Detects connected removable drives (SD cards, USB drives) on Windows."""
@@ -144,45 +94,136 @@ def get_removable_drives():
         pass
     return drives
 
-def action_youtube_turbo(passed_urls=None):
-    clear_screen()
-    print_banner()
+def render_moviebox_home(queue, flash_message=None):
+    """Renders the MovieBox-TUI centered workstation interface."""
+    term_w = console.size.width
+    box_w = min(74, max(52, term_w - 6))
 
-    urls = []
-    if passed_urls:
-        urls = passed_urls
+    # 1. Pixel/Isometric Title Banner
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    version_tag = Text("v2.4.0 — Turbo 3GP Workstation\n", style="dim #94a3b8")
+
+    # 2. Centered Search / Input Box (Exact MovieBox styling)
+    inner_grid = Table.grid(expand=True)
+    inner_grid.add_column(justify="left")
+    inner_grid.add_column(justify="right")
+
+    if not queue:
+        placeholder = "Paste YouTube or video link here..."
+        badge_text = "[3GPBOX • ↵ Add]"
     else:
-        console.print(Panel(
-            "[bold white]Paste YouTube video or playlist link(s) below.[/bold white]\n"
-            "[dim]• Single link: https://youtu.be/...\n"
-            "• Multiple links: paste several links separated by spaces, commas, or line breaks.\n"
-            "• Text file: type path to links.txt to process all links inside.[/dim]\n\n"
-            "Press [bold green]ENTER[/bold green] when done (or leave blank to return):",
-            title="📥 YOUTUBE LINK IMPORTER",
-            border_style="cyan",
-            box=box.ROUNDED
-        ))
+        placeholder = "Paste next link (or press ENTER to start)..."
+        badge_text = f"[Queue: {len(queue)} • ↵ Add]"
 
-        lines = []
-        while True:
-            try:
-                line = input("👉 ").strip()
-                if not line:
-                    break
-                lines.append(line)
-                if yt3gp.extract_urls(line):
-                    break
-            except (KeyboardInterrupt, EOFError):
-                return
+    inner_grid.add_row(
+        Text.assemble(("❯ ", "bold #22d3ee"), (placeholder, "dim white")),
+        Text(badge_text, style="bold #818cf8")
+    )
+    input_panel = Panel(inner_grid, border_style="#6366f1", box=box.ROUNDED, width=box_w)
 
-        urls = yt3gp.extract_urls("\n".join(lines))
+    # Active profile details
+    p_info = converter_core.PRESETS.get(CURRENT_PRESET, {})
+    p_name = p_info.get("name", "Sanee S1123 Lite")
+    p_res = p_info.get("resolution", "176x144")
+    profile_badge = f"{p_name} ({p_res})"
 
-    if not urls:
-        console.print("[yellow]No valid links entered. Returning to menu...[/yellow]")
-        time.sleep(1.2)
-        return
+    # 3. Queue Section (Like MovieBox Favorites)
+    col1_w = int(box_w * 0.62)
+    col2_w = box_w - col1_w - 4
+    q_table = Table(
+        box=box.SIMPLE_HEAD,
+        expand=False,
+        width=box_w,
+        show_header=True,
+        header_style="bold #38bdf8",
+        border_style="#334155"
+    )
+    q_table.add_column(f"Queue ({len(queue)} items)", style="bold white", width=col1_w)
+    q_table.add_column(profile_badge, style="dim cyan", justify="right", width=col2_w)
 
-    console.print(f"\n[bold green]✓ Loaded {len(urls)} video(s) into queue![/bold green]\n")
+    if not queue:
+        q_table.add_row(
+            "[dim italic]No links in queue. Paste a link above and press [ENTER]...[/dim italic]",
+            "[dim]Empty[/dim]"
+        )
+    else:
+        for idx, item in enumerate(queue, 1):
+            # Format item label (clean url or filename)
+            if item.startswith("http"):
+                short_text = item if len(item) <= (col1_w - 6) else item[:col1_w - 9] + "..."
+            else:
+                p_name_only = Path(item).name
+                short_text = f"📁 {p_name_only}" if len(p_name_only) <= (col1_w - 6) else f"📁 {p_name_only[:col1_w - 9]}..."
+            q_table.add_row(f"[bold #a78bfa]#{idx}[/bold #a78bfa] {short_text}", "[bold green]Ready • 15 FPS[/bold green]")
+
+    # 4. Action bar at bottom
+    actions = Text.assemble(
+        ("[↵ ENTER]", "bold #4ade80"), (" Convert Queue   ", "white"),
+        ("[c]", "bold #f43f5e"), (" Clear   ", "white"),
+        ("[d #]", "bold #fbbf24"), (" Remove   ", "white"),
+        ("[m]", "bold #38bdf8"), (" Menu   ", "white"),
+        ("[q]", "bold #94a3b8"), (" Quit", "white")
+    )
+
+    console.print(Align.center(logo))
+    console.print(Align.center(version_tag))
+
+    if flash_message:
+        console.print(Align.center(Text.from_markup(f"{flash_message}\n")))
+
+    console.print(Align.center(input_panel))
+    console.print(Align.center(q_table))
+    console.print("\n", Align.center(actions))
+
+def show_extended_menu():
+    """Shows the full secondary control menu when user types 'm'."""
+    clear_screen()
+    
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
+    
+    menu = Table(box=box.ROUNDED, border_style="#6366f1", show_header=False, expand=True)
+    menu.add_column("Key", style="bold #38bdf8", width=6, justify="center")
+    menu.add_column("Feature & Description", style="white")
+
+    menu.add_row("[1]", "📁 [bold yellow]Convert Local Video Files / Folder[/bold yellow] — [dim]Batch convert D:\\hisss or any folder of videos[/dim]")
+    menu.add_row("[2]", "💾 [bold magenta]Transfer to Phone SD Card[/bold magenta] — [dim]Auto-detects USB/MicroSD card & copies 3GP files directly[/dim]")
+    menu.add_row("[3]", "🎬 [bold cyan]3GP File Explorer & Media Player[/bold cyan] — [dim]Browse, play in media player, or delete 3GP files[/dim]")
+    menu.add_row("[4]", "⚙️  [bold green]Profile & Studio Settings[/bold green] — [dim]Change target phone (Sanee S1123, Nokia, Sub-QCIF, QVGA)[/dim]")
+    menu.add_row("[5]", "🚀 [bold red]Hardware Benchmark Test[/bold red] — [dim]Live 15s speed test on CPU & Intel HD 4400 GPU[/dim]")
+    menu.add_row("[6]", "🌐 [bold blue]Open Web Browser Interface[/bold blue] — [dim]Launch graphical web UI at http://localhost:5000[/dim]")
+    menu.add_row("[7]", "💡 [bold white]Button Phone Guide & Tips[/bold white] — [dim]Folder layout, supported formats & troubleshooting[/dim]")
+    menu.add_row("[0]", "↩️  [dim white]Back to 3GPBOX Home[/dim white]")
+
+    p_info = converter_core.PRESETS.get(CURRENT_PRESET, {})
+    console.print(Panel(
+        menu,
+        title=f"[bold white]🛠️ 3GP STUDIO CONTROL PANEL (Profile: {p_info.get('name', 'Sanee S1123 Lite')})[/bold white]",
+        border_style="#38bdf8",
+        box=box.ROUNDED
+    ))
+
+    choice = input("\n👉 Select Option (0-7): ").strip()
+    if choice == "1":
+        action_local_files()
+    elif choice == "2":
+        action_sdcard_transfer()
+    elif choice == "3":
+        action_explorer()
+    elif choice == "4":
+        action_studio_settings()
+    elif choice == "5":
+        action_benchmark()
+    elif choice == "6":
+        action_open_web()
+    elif choice == "7":
+        action_guide()
+
+def action_youtube_turbo(passed_urls):
+    """Downloads & turbo converts all queued links/files with live progress."""
+    clear_screen()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
 
     ffmpeg_bin = converter_core.find_ffmpeg()
     import yt_dlp
@@ -190,69 +231,84 @@ def action_youtube_turbo(passed_urls=None):
     results = []
     total_start = time.time()
 
-    for idx, url in enumerate(urls, 1):
-        console.print(Panel(
-            f"[bold cyan]Item [{idx}/{len(urls)}]:[/bold cyan] [underline white]{url}[/underline white]",
-            border_style="bright_magenta",
-            box=box.ROUNDED
-        ))
+    console.print(Panel(
+        f"[bold white]🚀 Processing {len(passed_urls)} Queued Item(s) with 4-Thread DXVA2 Turbo Engine...[/bold white]",
+        border_style="bright_green",
+        box=box.ROUNDED
+    ))
 
-        # 1. Download Stage
+    for idx, item in enumerate(passed_urls, 1):
+        console.print(f"\n[bold #38bdf8]─── Item [{idx}/{len(passed_urls)}] ──────────────────────────────────────────[/bold #38bdf8]")
+        
         final_mp4 = None
         current_title = "Video"
         duration = 0
+        dl_time = 0.0
 
-        with Progress(
-            SpinnerColumn(spinner_name="line", style="cyan"),
-            TextColumn("[bold blue]{task.description}"),
-            BarColumn(bar_width=28, style="blue", complete_style="green"),
-            TaskProgressColumn(),
-            TextColumn("[dim]{task.fields[info]}"),
-            console=console
-        ) as dl_prog:
-            t_dl = dl_prog.add_task("📥 Fetching 144p H.264 stream...", total=100, info="")
+        # Check if item is already a local video file
+        is_local = os.path.exists(item) and os.path.isfile(item)
+        if is_local:
+            final_mp4 = item
+            current_title = Path(item).stem
+            v_info = converter_core.get_video_info(ffmpeg_bin, final_mp4)
+            duration = v_info.get("duration", 0)
+            console.print(f"  [dim cyan]⚡ Local file: '{current_title}' (No download needed)[/dim cyan]")
+        else:
+            # 1. YouTube Download Stage
+            console.print(f"  [bold white]🔗 YouTube URL:[/bold white] [underline cyan]{item}[/underline cyan]")
+            
+            with Progress(
+                SpinnerColumn(spinner_name="line", style="cyan"),
+                TextColumn("[bold blue]{task.description}"),
+                BarColumn(bar_width=28, style="blue", complete_style="green"),
+                TaskProgressColumn(),
+                TextColumn("[dim]{task.fields[info]}"),
+                console=console
+            ) as dl_prog:
+                t_dl = dl_prog.add_task("📥 Fetching 144p stream...", total=100, info="")
 
-            def ytdl_hook(d):
-                if d['status'] == 'downloading':
-                    pct_str = d.get('_percent_str', '0%').replace('%', '').strip()
-                    try:
-                        pct = float(pct_str)
-                    except ValueError:
-                        pct = 0.0
-                    spd = d.get('_speed_str', '').strip()
-                    dl_prog.update(t_dl, completed=pct, info=f"Speed: {spd}")
-                elif d['status'] == 'finished':
-                    dl_prog.update(t_dl, completed=100, info="Merging stream...")
+                def ytdl_hook(d):
+                    if d['status'] == 'downloading':
+                        pct_str = d.get('_percent_str', '0%').replace('%', '').strip()
+                        try:
+                            pct = float(pct_str)
+                        except ValueError:
+                            pct = 0.0
+                        spd = d.get('_speed_str', '').strip()
+                        dl_prog.update(t_dl, completed=pct, info=f"Speed: {spd}")
+                    elif d['status'] == 'finished':
+                        dl_prog.update(t_dl, completed=100, info="Stream ready")
 
-            ydl_opts = {
-                'format': yt3gp.YTDLP_FORMAT,
-                'outtmpl': str(INPUT_DIR / '%(title).40s [%(id)s].%(ext)s'),
-                'ffmpeg_location': ffmpeg_bin,
-                'noplaylist': False,
-                'quiet': True,
-                'no_warnings': True,
-                'progress_hooks': [ytdl_hook]
-            }
+                ydl_opts = {
+                    'format': yt3gp.YTDLP_FORMAT,
+                    'outtmpl': str(INPUT_DIR / '%(title).40s [%(id)s].%(ext)s'),
+                    'ffmpeg_location': ffmpeg_bin,
+                    'noplaylist': False,
+                    'quiet': True,
+                    'no_warnings': True,
+                    'progress_hooks': [ytdl_hook]
+                }
 
-            t0_dl = time.time()
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info_dict = ydl.extract_info(url, download=True)
-                    # If playlist, info_dict contains entries
-                    if 'entries' in info_dict:
-                        entries = [e for e in info_dict['entries'] if e]
-                        if entries:
-                            info_dict = entries[0]
-                    final_mp4 = ydl.prepare_filename(info_dict)
-                    current_title = info_dict.get('title', Path(final_mp4).stem)
-                    duration = info_dict.get('duration', 0)
-                dl_time = time.time() - t0_dl
-            except Exception as e:
-                console.print(f"  [bold red]✗ Download failed: {e}[/bold red]")
-                continue
+                t0_dl = time.time()
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info_dict = ydl.extract_info(item, download=True)
+                        if 'entries' in info_dict:
+                            entries = [e for e in info_dict['entries'] if e]
+                            if entries:
+                                info_dict = entries[0]
+                        final_mp4 = ydl.prepare_filename(info_dict)
+                        current_title = info_dict.get('title', Path(final_mp4).stem)
+                        duration = info_dict.get('duration', 0)
+                    dl_time = time.time() - t0_dl
+                    dl_size_mb = os.path.getsize(final_mp4) / (1024 * 1024) if os.path.exists(final_mp4) else 0
+                    console.print(f"  [green]✓[/green] Stream downloaded in [bold]{dl_time:.1f}s[/bold] ({dl_size_mb:.1f} MB)")
+                except Exception as e:
+                    console.print(f"  [bold red]✗ Download failed: {e}[/bold red]")
+                    continue
 
-        dl_size_mb = os.path.getsize(final_mp4) / (1024 * 1024) if (final_mp4 and os.path.exists(final_mp4)) else 0
-        console.print(f"  [green]✓[/green] Stream downloaded in [bold]{dl_time:.1f}s[/bold] ({dl_size_mb:.1f} MB)")
+        if not final_mp4 or not os.path.exists(final_mp4):
+            continue
 
         # 2. Conversion Stage
         safe_title = "".join(c for c in current_title if c.isalnum() or c in (" ", "-", "_", "[", "]")).strip()
@@ -303,8 +359,8 @@ def action_youtube_turbo(passed_urls=None):
             except Exception:
                 pass
 
-        # Clean up intermediate raw MP4
-        if os.path.exists(final_mp4):
+        # Clean up raw downloaded MP4 (do not delete if user passed an original local file)
+        if not is_local and os.path.exists(final_mp4):
             try:
                 os.remove(final_mp4)
             except Exception:
@@ -322,7 +378,7 @@ def action_youtube_turbo(passed_urls=None):
 
     # Summary
     if results:
-        table = Table(title="🎉 BATCH CONVERSION SUMMARY", box=box.DOUBLE_EDGE, border_style="bright_green")
+        table = Table(title="🎉 BATCH CONVERSION SUMMARY", box=box.ROUNDED, border_style="bright_green")
         table.add_column("#", style="cyan", justify="center", width=4)
         table.add_column("Video Title", style="bold white", max_width=35)
         table.add_column("Duration", style="yellow", justify="center")
@@ -341,11 +397,11 @@ def action_youtube_turbo(passed_urls=None):
         console.print(table)
         console.print(f"\n[bold green]⚡ All {len(results)} item(s) processed in {time.time()-total_start:.1f} seconds total![/bold green]")
 
-        # Prompt SD Card copy
+        # Auto-detect SD Card
         removable = get_removable_drives()
         if removable:
             console.print(f"\n[bold yellow]💾 Detected External/SD Card Drive: {removable[0]['root']} ({removable[0]['free_gb']:.1f} GB Free)[/bold yellow]")
-            ask_copy = input("Copy converted files directly to SD Card? (y/n) [Default: y]: ").strip().lower()
+            ask_copy = input("👉 Copy converted files directly to SD Card? (y/n) [Default: y]: ").strip().lower()
             if ask_copy != "n":
                 dest_dir = Path(removable[0]["root"]) / "Videos"
                 dest_dir.mkdir(exist_ok=True)
@@ -353,11 +409,13 @@ def action_youtube_turbo(passed_urls=None):
                     shutil.copy2(r["path"], str(dest_dir))
                 console.print(f"[bold green]✓ Successfully copied {len(results)} file(s) to {dest_dir}![/bold green]")
 
-    input("\nPress ENTER to return to menu...")
+    input("\nPress ENTER to return to 3GPBOX Home...")
 
 def action_local_files():
+    """Batch converts local files or directories."""
     clear_screen()
-    print_banner()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
 
     console.print(Panel(
         "[bold white]Enter a local video file path OR folder path:[/bold white]\n"
@@ -367,176 +425,90 @@ def action_local_files():
         box=box.ROUNDED
     ))
 
-    target = input("👉 ").strip().strip('"\'')
-    if not target:
+    raw_path = input("\n👉 Path: ").strip().strip("\"'")
+    if not raw_path:
         return
 
-    target_path = Path(target)
-    if not target_path.exists():
-        console.print(f"[bold red]Path '{target}' not found![/bold red]")
+    target = Path(raw_path)
+    if not target.exists():
+        console.print(f"[bold red]Path does not exist: {target}[/bold red]")
         time.sleep(1.5)
         return
 
-    files = []
-    if target_path.is_file():
-        files = [target_path]
-    else:
-        for ext in ("*.mp4", "*.mkv", "*.avi", "*.mov", "*.webm", "*.flv", "*.3gp"):
-            files.extend(target_path.glob(ext))
+    video_files = []
+    valid_exts = (".mp4", ".mkv", ".avi", ".mov", ".flv", ".webm", ".wmv", ".ts")
 
-    if not files:
-        console.print("[yellow]No supported video files found in that folder![/yellow]")
+    if target.is_file():
+        if target.suffix.lower() in valid_exts:
+            video_files.append(target)
+    elif target.is_dir():
+        for f in target.glob("*"):
+            if f.is_file() and f.suffix.lower() in valid_exts:
+                video_files.append(f)
+
+    if not video_files:
+        console.print("[yellow]No video files found in that location.[/yellow]")
         time.sleep(1.5)
         return
 
-    console.print(f"\n[bold green]✓ Found {len(files)} video(s) to convert![/bold green]\n")
+    action_youtube_turbo([str(vf) for vf in video_files])
 
-    for idx, f in enumerate(files, 1):
-        stem = f.stem
-        out_file = str(OUTPUT_DIR / f"{stem}_{CURRENT_PRESET}.3gp")
-        info = converter_core.get_video_info(converter_core.find_ffmpeg(), str(f))
-        dur_str = time.strftime('%H:%M:%S', time.gmtime(info["duration"]))
-
-        with Progress(
-            SpinnerColumn(),
-            TextColumn(f"[bold cyan][{idx}/{len(files)}] {f.name[:32]} ({dur_str})"),
-            BarColumn(bar_width=28, style="dim green", complete_style="green"),
-            TaskProgressColumn(),
-            TextColumn("[bold yellow]{task.fields[speed]}"),
-            TimeRemainingColumn(),
-            console=console
-        ) as prog:
-            task = prog.add_task("Converting", total=100, speed="0x")
-
-            t0 = time.time()
-            converter_core.convert_to_3gp(
-                input_file=str(f),
-                output_file=out_file,
-                preset_key=CURRENT_PRESET,
-                custom_options={"volume": CURRENT_VOLUME, "scale_mode": CURRENT_SCALE},
-                progress_callback=lambda pct, spd, eta, msg: prog.update(task, completed=pct, speed=spd)
-            )
-            elapsed = time.time() - t0
-
-        size_mb = os.path.getsize(out_file) / (1024 * 1024)
-        spd = info["duration"] / elapsed if elapsed > 0 else 0
-        console.print(f"  [bold green]✓ Done in {elapsed:.1f}s ({spd:.0f}x speed) -> {size_mb:.2f} MB[/bold green]")
-
-    if os.name == "nt":
-        subprocess.Popen(["explorer.exe", str(OUTPUT_DIR)])
-
-    input("\nPress ENTER to return to menu...")
-
-def action_instant_convert():
+def action_sdcard_transfer():
+    """Detects and transfers converted files to MicroSD card."""
     clear_screen()
-    print_banner()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
+
+    drives = get_removable_drives()
+    if not drives:
+        console.print(Panel(
+            "[bold red]No external memory card / USB drive detected![/bold red]\n"
+            "[white]Please insert your MicroSD card via USB card reader into your PC and try again.[/white]",
+            title="💾 SD CARD MANAGER",
+            border_style="red"
+        ))
+        input("\nPress ENTER to return to menu...")
+        return
 
     console.print(Panel(
-        "[bold white]⚡ FASTEST INSTANT CONVERT (Auto-Detection)[/bold white]\n"
-        "[dim]Paste ANY YouTube link OR Drag-and-drop ANY local video file here and press ENTER.\n"
-        "It will detect the input type and convert to button phone 3GP immediately:[/dim]",
-        title="⚡ 1-STEP QUICK CONVERT",
-        border_style="bright_yellow",
+        f"[bold green]Found {len(drives)} connected storage drive(s):[/bold green]\n" +
+        "\n".join([f"• Drive [{d['letter']}:] {d['type']} — {d['free_gb']:.2f} GB Free of {d['total_gb']:.2f} GB" for d in drives]),
+        title="💾 REMOVABLE DRIVES DETECTED",
+        border_style="green",
         box=box.ROUNDED
     ))
 
-    target = input("👉 ").strip().strip('"\'')
-    if not target:
-        return
-
-    # Check if URL
-    if target.startswith("http://") or target.startswith("https://") or "youtu" in target:
-        action_youtube_turbo([target])
-    elif os.path.exists(target):
-        action_local_files()
-    else:
-        urls = yt3gp.extract_urls(target)
-        if urls:
-            action_youtube_turbo(urls)
-        else:
-            console.print("[red]Input not recognized as a valid video file or URL![/red]")
-            time.sleep(1.5)
-
-def action_sdcard_transfer():
-    clear_screen()
-    print_banner()
-
-    drives = get_removable_drives()
-    files = sorted(list(OUTPUT_DIR.glob("*.3gp")), key=lambda x: x.stat().st_mtime, reverse=True)
-
-    if not files:
-        console.print("[yellow]No converted 3GP files found in output folder yet. Convert some videos first![/yellow]")
+    target_drive = drives[0]
+    out_files = list(OUTPUT_DIR.glob("*.3gp"))
+    if not out_files:
+        console.print("[yellow]No converted .3gp files found in output folder yet.[/yellow]")
         input("\nPress ENTER to return...")
         return
 
-    table = Table(title="💾 CONNECTED EXTERNAL / SD CARD DRIVES", box=box.ROUNDED, border_style="magenta")
-    table.add_column("#", style="cyan", justify="center")
-    table.add_column("Drive Letter", style="bold white", justify="center")
-    table.add_column("Type", style="yellow")
-    table.add_column("Free Space", style="green", justify="right")
-    table.add_column("Total Space", style="dim white", justify="right")
-
-    if not drives:
-        console.print(Panel(
-            "[yellow]No external SD card or USB card reader detected right now.[/yellow]\n"
-            "[dim]Plug in your phone's memory card using a card reader or USB data cable,\n"
-            "or type any drive letter manually (e.g. E: or F:):[/dim]",
-            title="⚠️ DRIVE DETECTION",
-            border_style="yellow"
-        ))
-        custom_drive = input("\nEnter Drive Letter (e.g. E) [or ENTER to cancel]: ").strip().upper().rstrip(":\\")
-        if not custom_drive:
-            return
-        target_root = f"{custom_drive}:\\"
-    else:
-        for idx, d in enumerate(drives, 1):
-            table.add_row(str(idx), d["root"], d["type"], f"{d['free_gb']:.2f} GB", f"{d['total_gb']:.2f} GB")
-        console.print(table)
-        choice = input("\nSelect Drive Number (1-9) [Default: 1]: ").strip()
-        idx_choice = int(choice) - 1 if (choice.isdigit() and int(choice) <= len(drives)) else 0
-        target_root = drives[idx_choice]["root"]
-
-    dest_folder = Path(target_root) / "Videos"
-    try:
-        dest_folder.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        console.print(f"[bold red]Could not access {dest_folder}: {e}[/bold red]")
-        input("\nPress ENTER to return...")
-        return
-
-    console.print(f"\n[bold green]Ready to copy {len(files)} file(s) into: {dest_folder}[/bold green]")
+    console.print(f"\nReady to copy [bold cyan]{len(out_files)}[/bold cyan] 3GP file(s) to [bold green]{target_drive['root']}Videos\\[/bold green]")
     confirm = input("Proceed? (y/n) [Default: y]: ").strip().lower()
-    if confirm == "n":
-        return
-
-    copied = 0
-    with Progress(console=console) as prog:
-        task = prog.add_task("[bold cyan]Copying to MicroSD...", total=len(files))
-        for f in files:
-            shutil.copy2(str(f), str(dest_folder / f.name))
-            copied += 1
-            prog.advance(task)
-
-    console.print(f"\n[bold green]✓ Successfully transferred {copied} 3GP video(s) to your Memory Card![/bold green]")
-    console.print(f"[dim]Safely eject the memory card and insert into your button phone.[/dim]")
-
-    if os.name == "nt":
-        subprocess.Popen(["explorer.exe", str(dest_folder)])
-
-    input("\nPress ENTER to return to menu...")
+    if confirm != "n":
+        dest = Path(target_drive['root']) / "Videos"
+        dest.mkdir(exist_ok=True)
+        for f in out_files:
+            console.print(f"  -> Copying {f.name}...")
+            shutil.copy2(f, str(dest / f.name))
+        console.print(f"\n[bold green]✓ All {len(out_files)} files copied successfully to {dest}![/bold green]")
+    input("\nPress ENTER to return...")
 
 def action_explorer():
+    """Explores, plays, or deletes converted 3GP files."""
     clear_screen()
-    print_banner()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
 
-    files = sorted(list(OUTPUT_DIR.glob("*.3gp")), key=lambda x: x.stat().st_mtime, reverse=True)
-
+    files = sorted(OUTPUT_DIR.glob("*.3gp"), key=os.path.getmtime, reverse=True)
     if not files:
-        console.print("[yellow]No converted files in output folder yet.[/yellow]")
+        console.print("[yellow]No 3GP files found in output directory.[/yellow]")
         input("\nPress ENTER to return...")
         return
 
-    table = Table(title="🎬 CONVERTED 3GP VIDEO MANAGER", box=box.ROUNDED, border_style="cyan")
+    table = Table(title=f"🎬 3GP OUTPUT GALLERY ({len(files)} Videos)", box=box.ROUNDED, border_style="cyan")
     table.add_column("#", style="cyan", justify="center", width=4)
     table.add_column("File Name", style="bold white", max_width=40)
     table.add_column("Size (MB)", style="green", justify="right")
@@ -575,47 +547,44 @@ def action_explorer():
         time.sleep(1)
 
 def action_studio_settings():
+    """Configures target resolution and profiles."""
     global CURRENT_PRESET, CURRENT_VOLUME, CURRENT_SCALE
     clear_screen()
-    print_banner()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
 
-    table = Table(title="⚙️  PHONE PROFILES & STUDIO TUNING", box=box.ROUNDED, border_style="bright_magenta")
-    table.add_column("Option", style="bold cyan", width=8, justify="center")
-    table.add_column("Parameter", style="bold white")
-    table.add_column("Current Value", style="bold green")
-    table.add_column("Available Choices", style="dim white")
+    console.print(Panel(
+        f"[bold white]Active Profile:[/bold white] [bold cyan]{CURRENT_PRESET.upper()}[/bold cyan]\n"
+        f"[bold white]Volume Boost:[/bold white] [bold green]{CURRENT_VOLUME}x[/bold green]\n"
+        f"[bold white]Scaling Mode:[/bold white] [bold yellow]{CURRENT_SCALE.upper()}[/bold yellow]",
+        title="⚙️ STUDIO PREFERENCES",
+        border_style="magenta",
+        box=box.ROUNDED
+    ))
 
-    table.add_row("[1]", "Phone Target Profile", CURRENT_PRESET.upper(), "Standard (176x144) / H.263 / UltraLow (128x96) / QVGA (320x240)")
-    table.add_row("[2]", "Speaker Volume Boost", f"{int(float(CURRENT_VOLUME)*100)}%", "100% (Normal) / 130% (Recommended) / 160% (Loud) / 200% (Double)")
-    table.add_row("[3]", "Aspect Ratio Mode", CURRENT_SCALE.upper(), "neighbor (Direct stretch, fastest) / pad (Black bars letterbox)")
+    console.print("1. Change Device Profile (Sanee S1123, Nokia, Ultra-Low, QVGA)")
+    console.print("2. Change Volume Boost (1.0 = normal, 1.3 = loud, 1.5 = extra-loud)")
+    console.print("3. Change Aspect Ratio Scaling (neighbor = full screen, pad = letterbox)")
+    console.print("0. Back")
 
-    console.print(table)
-    opt = input("\nSelect setting to change (1-3) [ENTER to exit]: ").strip()
-
+    opt = input("\n👉 Choice (0-3): ").strip()
     if opt == "1":
-        p_table = Table(box=box.SIMPLE)
-        p_table.add_column("Key", style="cyan")
-        p_table.add_column("Profile")
-        p_table.add_column("Specs")
-        p_table.add_row("1", "Standard (Default)", "176×144 QCIF • MPEG-4 15fps • AMR-NB 8k (Sanee S1123 Lite, Symphony, Walton, Itel)")
-        p_table.add_row("2", "Strict Legacy H.263", "176×144 QCIF • Single-thread H.263 (Ancient Nokia 2G)")
-        p_table.add_row("3", "Ultra-Low 128x96", "128×96 Sub-QCIF • 12fps (Smallest size, Nokia 3310)")
-        p_table.add_row("4", "HQ QVGA 320x240", "320×240 QVGA • 15fps (Nokia N73, 2700, 2.4\"+ screens)")
-        console.print(p_table)
-        p_choice = input("Select Profile (1-4): ").strip()
-        m = {"1": "standard", "2": "h263", "3": "ultralow", "4": "qvga"}
-        if p_choice in m:
-            CURRENT_PRESET = m[p_choice]
-            console.print(f"[bold green]✓ Switched to {CURRENT_PRESET.upper()}![/bold green]")
+        console.print("\nAvailable Profiles:")
+        for k, v in converter_core.PRESETS.items():
+            console.print(f" • [bold cyan]{k}[/bold cyan]: {v['name']} ({v['resolution']}, {v['vcodec'].upper()})")
+        new_p = input("\nEnter preset key: ").strip().lower()
+        if new_p in converter_core.PRESETS:
+            CURRENT_PRESET = new_p
+            console.print(f"[bold green]✓ Profile switched to {CURRENT_PRESET}![/bold green]")
             time.sleep(1)
 
     elif opt == "2":
-        v_choice = input("Enter Volume Multiplier (1.0 = 100%, 1.3 = 130%, 1.6 = 160%, 2.0 = 200%): ").strip()
+        new_v = input("Enter volume factor (e.g. 1.0, 1.3, 1.5): ").strip()
         try:
-            val = float(v_choice)
+            val = float(new_v)
             if 0.5 <= val <= 3.0:
                 CURRENT_VOLUME = str(val)
-                console.print(f"[bold green]✓ Volume set to {int(val*100)}%![/bold green]")
+                console.print(f"[bold green]✓ Volume set to {CURRENT_VOLUME}x![/bold green]")
                 time.sleep(1)
         except ValueError:
             pass
@@ -631,8 +600,10 @@ def action_studio_settings():
         time.sleep(1)
 
 def action_benchmark():
+    """Runs a 15-second encode speed benchmark."""
     clear_screen()
-    print_banner()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
 
     console.print(Panel(
         "[bold white]🚀 LIVE HARDWARE ENCODE BENCHMARK[/bold white]\n"
@@ -646,7 +617,6 @@ def action_benchmark():
     bench_mp4 = str(BASE_DIR / "bench_test.mp4")
     bench_3gp = str(BASE_DIR / "bench_test.3gp")
 
-    # Generate 15-second test video
     console.print("[*] Generating test stream...")
     subprocess.run([
         ffmpeg_bin, "-y", "-f", "lavfi", "-i", "testsrc=duration=15:size=640x360:rate=30",
@@ -664,7 +634,6 @@ def action_benchmark():
     fps_avg = (15 * 15) / elapsed if elapsed > 0 else 0
     speed_mult = 15 / elapsed if elapsed > 0 else 0
 
-    # Clean up
     for p in (bench_mp4, bench_3gp):
         if os.path.exists(p):
             os.remove(p)
@@ -684,6 +653,7 @@ def action_benchmark():
     input("\nPress ENTER to return to menu...")
 
 def action_open_web():
+    """Starts the local web GUI server."""
     console.print("[bold green]Starting Local Web Server GUI...[/bold green]")
     import webbrowser
     subprocess.Popen([sys.executable, str(BASE_DIR / "server.py")])
@@ -692,19 +662,21 @@ def action_open_web():
     time.sleep(1.5)
 
 def action_guide():
+    """Shows button phone compatibility guide."""
     clear_screen()
-    print_banner()
+    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    console.print(Align.center(logo))
 
     console.print(Panel(
         "[bold cyan]১. বাটন ফোনে সাধারণ MP4 কেন চলে না?[/bold cyan]\n"
         "বাটন ফোনের চিপসেট (MediaTek MT6261, Spreadtrum SC6531) কেবল 176×144 (QCIF) রেজোলিউশন,\n"
         "15 FPS ফ্রেমরেট এবং AMR-NB (8000 Hz Mono) অডিও ডিকোড করতে পারে।\n\n"
         "[bold cyan]২. মেমোরি কার্ডে (MicroSD) কীভাবে রাখবেন?[/bold cyan]\n"
-        "১. কার্ড রিডারে মেমোরি কার্ড লাগিয়ে পিসিতে লাগান।\n"
-        "২. TUI এর [bold green]Option [4][/bold green] চাপলে স্বয়ংক্রিয়ভাবে মেমোরি কার্ডের 'Videos' ফোল্ডারে কপি হয়ে যাবে।\n"
+        "১. কার্ড রিডারে মেমোরi কার্ড লাগিয়ে পিসিতে লাগান।\n"
+        "২. 3GPBOX এ [bold green]'s'[/bold green] টাইপ করলে স্বয়ংক্রিয়ভাবে মেমোরি কার্ডের 'Videos' ফোল্ডারে ফাইল কপি হয়ে যাবে।\n"
         "৩. ফোনে মেমোরি কার্ড লাগিয়ে ফোনের 'Video Player' থেকে চালান।\n\n"
         "[bold cyan]৩. যদি 'Unsupported Format' দেখায়?[/bold cyan]\n"
-        "Option [6] চেপে প্রোফাইল [bold yellow]Strict Legacy H.263[/bold yellow] সিলেক্ট করুন।\n"
+        "'p' চেপে প্রোফাইল [bold yellow]Strict Legacy H.263 (legacy)[/bold yellow] সিলেক্ট করুন।\n"
         "এটি ২০০০ সালের সবচেয়ে প্রাচীন নকিয়া বাটন ফোনেও ১০০% চলবে।",
         title="💡 বাটন ফোন ভিডিও গাইড ও টিপস",
         border_style="yellow",
@@ -713,44 +685,143 @@ def action_guide():
     input("\nPress ENTER to return to menu...")
 
 def main():
-    # If links passed via CLI, e.g. "3gp https://youtu.be/..."
+    # If links passed via CLI argument, e.g. "3gp https://youtu.be/..."
     if len(sys.argv) > 1:
-        urls = yt3gp.extract_urls(" ".join(sys.argv[1:]))
+        raw_cli_arg = " ".join(sys.argv[1:])
+        urls = yt3gp.extract_urls(raw_cli_arg)
         if urls:
             action_youtube_turbo(urls)
             return
 
+    queue = []
+    flash_msg = None
+
     while True:
         clear_screen()
-        print_banner()
-        show_main_menu()
+        render_moviebox_home(queue, flash_message=flash_msg)
+        flash_msg = None
+
+        term_w = console.size.width
+        box_w = min(74, max(52, term_w - 6))
+        pad = " " * max(0, (term_w - box_w) // 2)
 
         try:
-            choice = input("\n👉 Select Option (0-9): ").strip()
+            prompt_str = f"{pad}[bold #22d3ee]❯ [/bold #22d3ee][bold white]"
+            user_input = console.input(prompt_str).strip()
         except (KeyboardInterrupt, EOFError):
+            console.print("\n[bold cyan]⚡ Exiting 3GPBOX. Goodbye! 👋[/bold cyan]\n")
             break
 
-        if choice == "1":
-            action_youtube_turbo()
-        elif choice == "2":
-            action_local_files()
-        elif choice == "3":
-            action_instant_convert()
-        elif choice == "4":
-            action_sdcard_transfer()
-        elif choice == "5":
-            action_explorer()
-        elif choice == "6":
-            action_studio_settings()
-        elif choice == "7":
-            action_benchmark()
-        elif choice == "8":
-            action_open_web()
-        elif choice == "9":
-            action_guide()
-        elif choice in ("0", "q", "exit"):
-            console.print("\n[bold cyan]⚡ Turbo 3GP Converter বন্ধ করা হয়েছে। ভালো থাকবেন! 👋[/bold cyan]\n")
+        # User pressed ENTER without typing anything
+        if not user_input:
+            if queue:
+                action_youtube_turbo(queue)
+                queue.clear()
+            else:
+                flash_msg = "[bold yellow]⚠️ Queue is empty! Paste a YouTube link or video path first.[/bold yellow]"
+            continue
+
+        cmd = user_input.strip()
+        cmd_lower = cmd.lower()
+
+        # Exit
+        if cmd_lower in ("q", "exit", "quit"):
+            console.print("\n[bold cyan]⚡ Exiting 3GPBOX. Goodbye! 👋[/bold cyan]\n")
             break
+
+        # Clear queue
+        if cmd_lower in ("c", "clear"):
+            queue.clear()
+            flash_msg = "[bold red]🗑️ Queue cleared.[/bold red]"
+            continue
+
+        # Explicit start
+        if cmd_lower in ("start", "go", "run"):
+            if queue:
+                action_youtube_turbo(queue)
+                queue.clear()
+            else:
+                flash_msg = "[bold yellow]⚠️ Queue is empty! Paste a link first.[/bold yellow]"
+            continue
+
+        # Delete single item: d 1, d 2
+        if cmd_lower.startswith("d ") and cmd[2:].strip().isdigit():
+            idx = int(cmd[2:].strip())
+            if 1 <= idx <= len(queue):
+                removed = queue.pop(idx - 1)
+                flash_msg = f"[bold yellow]✓ Removed item #{idx}[/bold yellow]"
+            else:
+                flash_msg = f"[bold red]✗ Invalid item #{idx}[/bold red]"
+            continue
+
+        # Extended Menu
+        if cmd_lower in ("m", "menu", "help"):
+            show_extended_menu()
+            continue
+
+        # Shortcuts to other features
+        if cmd_lower in ("s", "sd"):
+            action_sdcard_transfer()
+            continue
+
+        if cmd_lower in ("p", "profile", "settings"):
+            action_studio_settings()
+            continue
+
+        if cmd_lower in ("b", "bench", "benchmark"):
+            action_benchmark()
+            continue
+
+        if cmd_lower in ("l", "local"):
+            action_local_files()
+            continue
+
+        if cmd_lower in ("w", "web"):
+            action_open_web()
+            continue
+
+        if cmd_lower in ("g", "guide"):
+            action_guide()
+            continue
+
+        # Check if user entered URLs (can be single or multiple separated by space/commas)
+        extracted = yt3gp.extract_urls(cmd)
+        if extracted:
+            new_added = 0
+            for u in extracted:
+                if u not in queue:
+                    queue.append(u)
+                    new_added += 1
+            if new_added == 1:
+                flash_msg = f"[bold green]✓ Link added to queue! ({len(queue)} in queue)[/bold green]"
+            elif new_added > 1:
+                flash_msg = f"[bold green]✓ Added {new_added} links to queue! ({len(queue)} in queue)[/bold green]"
+            else:
+                flash_msg = "[bold yellow]ℹ️ Link is already in queue.[/bold yellow]"
+            continue
+
+        # Check if user entered a local file or directory
+        clean_path = cmd.strip("\"'")
+        if os.path.exists(clean_path):
+            p = Path(clean_path)
+            valid_exts = (".mp4", ".mkv", ".avi", ".mov", ".flv", ".webm", ".wmv", ".ts")
+            if p.is_file() and p.suffix.lower() in valid_exts:
+                if str(p) not in queue:
+                    queue.append(str(p))
+                    flash_msg = f"[bold green]✓ Added local video '{p.name}' to queue! ({len(queue)} in queue)[/bold green]"
+                else:
+                    flash_msg = "[bold yellow]ℹ️ File is already in queue.[/bold yellow]"
+            elif p.is_dir():
+                found_vids = [f for f in p.glob("*") if f.is_file() and f.suffix.lower() in valid_exts]
+                added_c = 0
+                for fv in found_vids:
+                    if str(fv) not in queue:
+                        queue.append(str(fv))
+                        added_c += 1
+                flash_msg = f"[bold green]✓ Added {added_c} videos from '{p.name}' to queue! ({len(queue)} in queue)[/bold green]"
+            continue
+
+        flash_msg = f"[bold yellow]⚠️ Unrecognized link or command: '{cmd[:30]}'. Type 'm' for Menu.[/bold yellow]"
 
 if __name__ == "__main__":
     main()

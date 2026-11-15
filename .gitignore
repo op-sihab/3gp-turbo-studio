@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+venv/
+ENV/
+
+# Large binaries & FFmpeg executable
+bin/*.exe
+*.exe
+
+# Media files & Transcoding directories
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+temp/
+*.mp4
+*.3gp
+*.mkv
+*.avi
+*.webm
+bench_test.*
+
+# OS and IDE files
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3GP Converter for Button Phones | বাটন ফোন ৩জিপি কনভার্টার</title>
+    <link rel="stylesheet" href="/web/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%3E<text y=%2226%22 font-size=%2224%22>📱</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">📱</div>
+                <div>
+                    <h1>3GP Video Converter</h1>
+                    <p class="subtitle">বাটন ফোনের জন্য বিশেষায়িত MP4 to 3GP কনভার্টার</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="btnOpenFolder">
+                    📁 ওপেন আউটপুট ফোল্ডার
+                </button>
+                <button class="btn btn-secondary" id="btnHelpModal">
+                    💡 ফোন টিপস
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Left Panel: Preset & Controls -->
+            <section class="config-panel">
+                <div class="card">
+                    <h2 class="card-title">১. বাটন ফোন প্রোফাইল নির্বাচন করুন (Preset)</h2>
+                    <p class="card-desc">আপনার বাটন ফোনের ধরন অনুযায়ী প্রোফাইল সিলেক্ট করুন:</p>
+
+                    <div class="preset-grid" id="presetGrid">
+                        <!-- Standard QCIF -->
+                        <div class="preset-card active" data-preset="standard">
+                            <div class="preset-header">
+                                <span class="preset-badge badge-recommended">সবচেয়ে সেরা (Recommended)</span>
+                                <span class="preset-icon">📱</span>
+                            </div>
+                            <h3>স্ট্যান্ডার্ড বাটন ফোন</h3>
+                            <div class="preset-specs">
+                                <span>176×144 (QCIF)</span> • <span>H.263</span> • <span>15 FPS</span> • <span>AMR-NB</span>
+                            </div>
+                            <p class="preset-info">Walton, Symphony, Itel, Nokia 105/130/216, Samsung Guru সব ফোনেই ১০০% চলবে।</p>
+                        </div>
+
+                        <!-- Ultra-Low -->
+                        <div class="preset-card" data-preset="ultralow">
+                            <div class="preset-header">
+                                <span class="preset-badge">অতি ছোট সাইজ</span>
+                                <span class="preset-icon">📟</span>
+                            </div>
+                            <h3>আল্ট্রা-লো / ক্লাসিক ২জি</h3>
+                            <div class="preset-specs">
+                                <span>128×96</span> • <span>H.263</span> • <span>12 FPS</span> • <span>AMR-NB</span>
+                            </div>
+                            <p class="preset-info">Nokia 3310, 2690, অতি প্রাচীন বাটন ফোন এবং ন্যূনতম স্টোরেজ খরচের জন্য।</p>
+                        </div>
+
+                        <!-- QVGA -->
+                        <div class="preset-card" data-preset="qvga">
+                            <div class="preset-header">
+                                <span class="preset-badge">বড় স্ক্রিন</span>
+                                <span class="preset-icon">📺</span>
+                            </div>
+                            <h3>এইচকিউ বাটন ফোন (QVGA)</h3>
+                            <div class="preset-specs">
+                                <span>320×240 (QVGA)</span> • <span>MPEG-4</span> • <span>15 FPS</span> • <span>AMR-NB</span>
+                            </div>
+                            <p class="preset-info">Nokia N73, 2700c, C2-01 এবং ২.৪"/২.৮" কালার ডিসপ্লেযুক্ত ফিচার ফোনের জন্য।</p>
+                        </div>
+
+                        <!-- QVGA AAC -->
+                        <div class="preset-card" data-preset="qvga_aac">
+                            <div class="preset-header">
+                                <span class="preset-badge">ক্লিয়ার সাউন্ড</span>
+                                <span class="preset-icon">🎵</span>
+                            </div>
+                            <h3>এইচকিউ + স্পষ্ট অডিও (AAC)</h3>
+                            <div class="preset-specs">
+                                <span>320×240</span> • <span>MPEG-4</span> • <span>15 FPS</span> • <span>AAC 16k</span>
+                            </div>
+                            <p class="preset-info">যেসব বাটন ফোনে AAC সাউন্ড সাপোর্ট করে (গান ও মিউজিক ভিডিওর জন্য দারুণ)।</p>
+                        </div>
+                    </div>
+
+                    <!-- Additional Adjustments -->
+                    <div class="advanced-settings">
+                        <div class="setting-row">
+                            <label for="aspectSelect">
+                                <strong>এসপেক্ট রেশিও (Aspect Ratio):</strong>
+                                <small>ভিডিও যাতে চ্যাপ্টা বা বিকৃত না হয়</small>
+                            </label>
+                            <select id="aspectSelect" class="form-select">
+                                <option value="pad" selected>লেটারবক্স (ব্ল্যাক বার দিয়ে অনুপাত ঠিক রাখবে - সেরা)</option>
+                                <option value="stretch">ফুল স্ক্রিন স্ট্রেচ (স্ক্রিন পূরণ করবে)</option>
+                                <option value="crop">সেন্টার ক্রপ (মাঝখান রেখে দুপাশ কেটে নেবে)</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-row">
+                            <label for="volumeSelect">
+                                <strong>সাউন্ড বুস্ট (Volume Boost):</strong>
+                                <small>বাটন ফোনের স্পিকারের জন্য জোরালো আওয়াজ</small>
+                            </label>
+                            <select id="volumeSelect" class="form-select">
+                                <option value="1.0">স্বাভাবিক (100%)</option>
+                                <option value="1.2" selected>১২০% (রেকমেন্ডেড - স্পিকারে স্পষ্ট শুনবে)</option>
+                                <option value="1.5">১৫০% (জোরালো সাউন্ড)</option>
+                                <option value="2.0">২০০% (ডাবল সাউন্ড)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Upload & Queue -->
+            <section class="upload-panel">
+                <!-- Dropzone -->
+                <div class="dropzone" id="dropzone">
+                    <input type="file" id="fileInput" multiple accept="video/*,.mp4,.mkv,.avi,.mov,.webm,.flv,.3gp" hidden>
+                    <div class="drop-icon">🎬</div>
+                    <h3>ভিডিও ফাইল এখানে টেনে এনে ছাড়ুন</h3>
+                    <p>বা ব্রাউজ করতে এখানে ক্লিক করুন (MP4, MKV, AVI, WebM ইত্যাদি)</p>
+                    <span class="btn btn-primary">ভিডিও নির্বাচন করুন</span>
+                </div>
+
+                <!-- Conversion Queue -->
+                <div class="queue-card card">
+                    <div class="queue-header">
+                        <h2>কনভার্ট হচ্ছে এমন ফাইলসমূহ</h2>
+                        <span id="queueCounter" class="badge">০ টি ফাইল</span>
+                    </div>
+
+                    <div id="queueList" class="queue-list">
+                        <div class="empty-state" id="emptyQueue">
+                            <span>💡 এখনো কোনো ভিডিও দেওয়া হয়নি। ওপরে ভিডিও ড্রপ করুন।</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Converted Files List -->
+                <div class="converted-card card">
+                    <div class="queue-header">
+                        <h2>আগে কনভার্ট করা ফাইলসমূহ (Output Folder)</h2>
+                        <button class="btn btn-sm btn-secondary" id="btnRefreshOutputs">🔄 রিফ্রেশ</button>
+                    </div>
+                    <div id="outputList" class="output-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Help Modal -->
+        <div class="modal" id="helpModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📱 বাটন ফোনে ভিডিও চালানোর নিয়ম ও জরুরি টিপস</h2>
+                    <button class="modal-close" id="btnCloseHelp">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="tip-box">
+                        <h4>১. বাটন ফোনে সাধারণ MP4 কেন চলে না?</h4>
+                        <p>আধুনিক MP4 ভিডিওগুলো 1080p বা 720p রেজোলিউশন ও H.264/H.265 কোডেক ব্যবহার করে। কিন্তু সাধারণ বাটন ফোনের মেমোরি ও চিপসেট (MediaTek/Spreadtrum) শুধুমাত্র <strong>H.263 কোডেক, 176×144 (QCIF) রেজোলিউশন এবং AMR-NB 8000Hz অডিও</strong> ডিকোড করতে পারে।</p>
+                    </div>
+
+                    <div class="tip-box">
+                        <h4>২. মেমোরি কার্ডে কীভাবে ভিডিও রাখবেন?</h4>
+                        <ol>
+                            <li>এখানে ভিডিও কনভার্ট করে <strong>"ডাউনলোড .3GP"</strong> এ ক্লিক করুন অথবা সরাসরি <strong>"ওপেন আউটপুট ফোল্ডার"</strong> থেকে ফাইল কপি করুন।</li>
+                            <li>মেমোরি কার্ড বা ফোন ক্যাবলের মাধ্যমে কম্পিউটারের সাথে যুক্ত করুন।</li>
+                            <li>মেমোরি কার্ডের <strong>"Videos"</strong> বা <strong>"My Videos"</strong> ফোল্ডারে ফাইলটি পেস্ট করুন।</li>
+                            <li>ফোনের ফাইল ম্যানেজার বা ভিডিও প্লেয়ারে গিয়ে চালিয়ে উপভোগ করুন!</li>
+                        </ol>
+                    </div>
+
+                    <div class="tip-box">
+                        <h4>৩. "File Format Not Supported" দেখালে কী করবেন?</h4>
+                        <p>যদি আপনার ফোনে কোনো কারণে ভিডিও না চলে, তবে <strong>"আল্ট্রা-লো / ক্লাসিক ২জি (128×96)"</strong> প্রোফাইল সিলেক্ট করে আবার কনভার্ট করুন। এটি বিশ্বের সবচেয়ে কমদামী বা পুরোনো বাটন ফোনেও নির্দ্বিধায় চলবে।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>3GP Button Phone Video Converter • Powered by FFmpeg & Python • Made for Feature Phones</p>
+        </footer>
+    </div>
+
+    <script src="/web/app.js"></script>
+</body>
+</html>

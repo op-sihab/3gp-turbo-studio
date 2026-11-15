@@ -58,13 +58,110 @@ CURRENT_VOLUME = "1.3"
 CURRENT_SCALE = "neighbor"
 
 # Pixel / Isometric ASCII Banner styled after MovieBox
-ASCII_3GPBOX = r"""
-  ██████╗   ██████╗  ██████╗  ██████╗   ██████╗  ██╗  ██╗
-  ╚════██╗ ██╔════╝  ██╔══██╗ ██╔══██╗ ██╔═══██╗ ╚██╗██╔╝
-   █████╔╝ ██║  ███╗ ██████╔╝ ██████╔╝ ██║   ██║  ╚███╔╝ 
-   ╚═══██╗ ██║   ██║ ██╔═══╝  ██╔══██╗ ██║   ██║  ██╔██╗ 
-  ██████╔╝ ╚██████╔╝ ██║      ██████╔╝ ╚██████╔╝ ██╔╝ ██╗
-  ╚═════╝   ╚═════╝  ╚═╝      ╚═════╝   ╚═════╝  ╚═╝  ╚═╝"""
+ASCII_LOGO_LINES = [
+    r"  ██████╗   ██████╗  ██████╗  ██████╗   ██████╗  ██╗  ██╗",
+    r"  ╚════██╗ ██╔════╝  ██╔══██╗ ██╔══██╗ ██╔═══██╗ ╚██╗██╔╝",
+    r"   █████╔╝ ██║  ███╗ ██████╔╝ ██████╔╝ ██║   ██║  ╚███╔╝ ",
+    r"   ╚═══██╗ ██║   ██║ ██╔═══╝  ██╔══██╗ ██║   ██║  ██╔██╗ ",
+    r"  ██████╔╝ ╚██████╔╝ ██║      ██████╔╝ ╚██████╔╝ ██╔╝ ██╗",
+    r"  ╚═════╝   ╚═════╝  ╚═╝      ╚═════╝   ╚═════╝  ╚═╝  ╚═╝"
+]
+
+# Themes Engine
+THEMES = {
+    "orange": {
+        "name": "Cyber Orange (Sunset Blaze)",
+        "gradient": ["#ff5722", "#ff7043", "#ff8a65", "#ffa726", "#ffb74d", "#ffcc80"],
+        "tag": "#fdba74",
+        "prompt": "#ff6b00",
+        "box_border": "#ea580c",
+        "box_active": "#ff8c00",
+        "badge": "#ea580c",
+        "cursor": "#fbbf24",
+        "text": "#fff7ed",
+        "queue_head": "#fbbf24",
+        "queue_border": "#7c2d12",
+        "queue_num": "#f97316",
+        "queue_status": "#4ade80",
+        "action_enter": "#4ade80",
+        "action_clear": "#f43f5e",
+        "action_del": "#fbbf24",
+        "action_theme": "#fb923c",
+        "action_menu": "#f97316",
+        "action_quit": "#78716c",
+    },
+    "lilac": {
+        "name": "MovieBox Lilac",
+        "gradient": ["#9333ea", "#a855f7", "#c084fc", "#d8b4fe", "#e9d5ff", "#f3e8ff"],
+        "tag": "#94a3b8",
+        "prompt": "#22d3ee",
+        "box_border": "#6366f1",
+        "box_active": "#38bdf8",
+        "badge": "#818cf8",
+        "cursor": "#38bdf8",
+        "text": "#f8fafc",
+        "queue_head": "#38bdf8",
+        "queue_border": "#334155",
+        "queue_num": "#a78bfa",
+        "queue_status": "#4ade80",
+        "action_enter": "#4ade80",
+        "action_clear": "#f43f5e",
+        "action_del": "#fbbf24",
+        "action_theme": "#a78bfa",
+        "action_menu": "#38bdf8",
+        "action_quit": "#94a3b8",
+    },
+    "matrix": {
+        "name": "Matrix Green (Hacker)",
+        "gradient": ["#15803d", "#16a34a", "#22c55e", "#4ade80", "#86efac", "#bbf7d0"],
+        "tag": "#86efac",
+        "prompt": "#4ade80",
+        "box_border": "#16a34a",
+        "box_active": "#4ade80",
+        "badge": "#15803d",
+        "cursor": "#86efac",
+        "text": "#f0fdf4",
+        "queue_head": "#86efac",
+        "queue_border": "#14532d",
+        "queue_num": "#4ade80",
+        "queue_status": "#22c55e",
+        "action_enter": "#4ade80",
+        "action_clear": "#f43f5e",
+        "action_del": "#fbbf24",
+        "action_theme": "#86efac",
+        "action_menu": "#22c55e",
+        "action_quit": "#78716c",
+    },
+    "cyberpunk": {
+        "name": "Neon Cyan / Blue",
+        "gradient": ["#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#38bdf8", "#7dd3fc"],
+        "tag": "#7dd3fc",
+        "prompt": "#00f0ff",
+        "box_border": "#2563eb",
+        "box_active": "#38bdf8",
+        "badge": "#1d4ed8",
+        "cursor": "#00f0ff",
+        "text": "#f0f9ff",
+        "queue_head": "#38bdf8",
+        "queue_border": "#1e3a8a",
+        "queue_num": "#60a5fa",
+        "queue_status": "#4ade80",
+        "action_enter": "#4ade80",
+        "action_clear": "#f43f5e",
+        "action_del": "#fbbf24",
+        "action_theme": "#60a5fa",
+        "action_menu": "#38bdf8",
+        "action_quit": "#78716c",
+    }
+}
+CURRENT_THEME = "orange"
+
+def cycle_theme() -> str:
+    global CURRENT_THEME
+    keys = list(THEMES.keys())
+    curr_idx = keys.index(CURRENT_THEME) if CURRENT_THEME in keys else 0
+    CURRENT_THEME = keys[(curr_idx + 1) % len(keys)]
+    return THEMES[CURRENT_THEME]["name"]
 
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
@@ -124,9 +221,13 @@ def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
     term_w = console.size.width
     box_w = min(74, max(52, term_w - 6))
 
-    # 1. Pixel/Isometric Title Banner
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
-    version_tag = Text("v2.4.0 — Turbo 3GP Workstation\n", style="dim #94a3b8")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+
+    # 1. Gradient ASCII Logo Banner
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
+    version_tag = Text(f"v2.4.0 — Turbo 3GP Workstation • {thm['name']}\n", style=f"dim {thm['tag']}")
 
     # 2. Interactive Input Box with typing and blinking cursor DIRECTLY inside!
     inner_grid = Table.grid(expand=True)
@@ -138,24 +239,25 @@ def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
 
     if not input_text:
         content = Text.assemble(
-            ("❯ ", "bold #22d3ee"),
-            (cursor_char, "bold #38bdf8"),
-            (" Paste YouTube or video link here...", "dim #64748b")
+            ("❯ ", f"bold {thm['prompt']}"),
+            (cursor_char, f"bold {thm['cursor']}"),
+            (" Paste YouTube or video link here...", "dim #78716c")
         )
     else:
         disp = input_text if len(input_text) <= max_disp_w else "..." + input_text[-(max_disp_w - 3):]
         content = Text.assemble(
-            ("❯ ", "bold #22d3ee"),
-            (disp, "bold white"),
-            (cursor_char, "bold #38bdf8")
+            ("❯ ", f"bold {thm['prompt']}"),
+            (disp, f"bold {thm['text']}"),
+            (cursor_char, f"bold {thm['cursor']}")
         )
 
     badge_text = f"[Queue: {len(queue)} • ↵ Add]"
-    inner_grid.add_row(content, Text(badge_text, style="bold #818cf8"))
+    inner_grid.add_row(content, Text(badge_text, style=f"bold {thm['badge']}"))
 
+    border_c = thm["box_active"] if input_text else thm["box_border"]
     input_panel = Panel(
         inner_grid,
-        border_style="#38bdf8" if input_text else "#6366f1",
+        border_style=border_c,
         box=box.ROUNDED,
         width=box_w
     )
@@ -175,11 +277,11 @@ def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
         expand=False,
         width=box_w,
         show_header=True,
-        header_style="bold #38bdf8",
-        border_style="#334155"
+        header_style=f"bold {thm['queue_head']}",
+        border_style=thm["queue_border"]
     )
     q_table.add_column(f"Queue ({len(queue)} items)", style="bold white", width=col1_w)
-    q_table.add_column(profile_badge, style="dim cyan", justify="right", width=col2_w)
+    q_table.add_column(profile_badge, style=f"dim {thm['tag']}", justify="right", width=col2_w)
 
     if not queue:
         q_table.add_row(
@@ -193,15 +295,19 @@ def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
             else:
                 p_name_only = Path(item).name
                 short_text = f"📁 {p_name_only}" if len(p_name_only) <= (col1_w - 6) else f"📁 {p_name_only[:col1_w - 9]}..."
-            q_table.add_row(f"[bold #a78bfa]#{idx}[/bold #a78bfa] {short_text}", "[bold green]Ready • 15 FPS[/bold green]")
+            q_table.add_row(
+                f"[bold {thm['queue_num']}]#{idx}[/bold {thm['queue_num']}] {short_text}",
+                f"[bold {thm['queue_status']}]Ready • 15 FPS[/bold {thm['queue_status']}]"
+            )
 
-    # 4. Action bar at bottom
+    # 4. Action bar at bottom (clean, un-wrapped)
     actions = Text.assemble(
-        ("[↵ ENTER]", "bold #4ade80"), (" Convert Queue   ", "white"),
-        ("[c]", "bold #f43f5e"), (" Clear   ", "white"),
-        ("[d #]", "bold #fbbf24"), (" Remove   ", "white"),
-        ("[m]", "bold #38bdf8"), (" Menu   ", "white"),
-        ("[q]", "bold #94a3b8"), (" Quit", "white")
+        ("[↵ ENTER]", f"bold {thm['action_enter']}"), (" Convert   ", "white"),
+        ("[c]", f"bold {thm['action_clear']}"), (" Clear   ", "white"),
+        ("[d #]", f"bold {thm['action_del']}"), (" Del   ", "white"),
+        ("[t]", f"bold {thm['action_theme']}"), (" Theme   ", "white"),
+        ("[m]", f"bold {thm['action_menu']}"), (" Menu   ", "white"),
+        ("[q]", f"bold {thm['action_quit']}"), (" Quit", "white")
     )
 
     container = Table.grid(expand=False)
@@ -220,7 +326,7 @@ def process_single_input(cmd: str, queue: list) -> tuple:
     """
     Processes user input text.
     Returns (action_code, flash_message).
-    action_code can be None, 'START', 'QUIT', 'MENU', 'SDCARD', 'SETTINGS', 'BENCHMARK', 'LOCAL', 'WEB', 'GUIDE'.
+    action_code can be None, 'START', 'QUIT', 'MENU', 'THEME', 'SDCARD', 'SETTINGS', 'BENCHMARK', 'LOCAL', 'WEB', 'GUIDE'.
     """
     cmd = cmd.strip()
     if not cmd:
@@ -239,6 +345,9 @@ def process_single_input(cmd: str, queue: list) -> tuple:
     elif cmd_lower in ("c", "clear"):
         queue.clear()
         return None, "[bold red]🗑️ Queue cleared.[/bold red]"
+    elif cmd_lower in ("t", "theme"):
+        new_thm_name = cycle_theme()
+        return None, f"[bold green]🎨 Switched theme to: {new_thm_name}![/bold green]"
     elif cmd_lower.startswith("d ") and cmd[2:].strip().isdigit():
         idx = int(cmd[2:].strip())
         if 1 <= idx <= len(queue):
@@ -407,31 +516,35 @@ def show_extended_menu():
     """Shows the full secondary control menu when user types 'm'."""
     clear_screen()
     
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
     
-    menu = Table(box=box.ROUNDED, border_style="#6366f1", show_header=False, expand=True)
-    menu.add_column("Key", style="bold #38bdf8", width=6, justify="center")
+    menu = Table(box=box.ROUNDED, border_style=thm["box_border"], show_header=False, expand=True)
+    menu.add_column("Key", style=f"bold {thm['prompt']}", width=6, justify="center")
     menu.add_column("Feature & Description", style="white")
 
     menu.add_row("[1]", "📁 [bold yellow]Convert Local Video Files / Folder[/bold yellow] — [dim]Batch convert D:\\hisss or any folder of videos[/dim]")
     menu.add_row("[2]", "💾 [bold magenta]Transfer to Phone SD Card[/bold magenta] — [dim]Auto-detects USB/MicroSD card & copies 3GP files directly[/dim]")
     menu.add_row("[3]", "🎬 [bold cyan]3GP File Explorer & Media Player[/bold cyan] — [dim]Browse, play in media player, or delete 3GP files[/dim]")
-    menu.add_row("[4]", "⚙️  [bold green]Profile & Studio Settings[/bold green] — [dim]Change target phone (Sanee S1123, Nokia, Sub-QCIF, QVGA)[/dim]")
-    menu.add_row("[5]", "🚀 [bold red]Hardware Benchmark Test[/bold red] — [dim]Live 15s speed test on CPU & Intel HD 4400 GPU[/dim]")
-    menu.add_row("[6]", "🌐 [bold blue]Open Web Browser Interface[/bold blue] — [dim]Launch graphical web UI at http://localhost:5000[/dim]")
-    menu.add_row("[7]", "💡 [bold white]Button Phone Guide & Tips[/bold white] — [dim]Folder layout, supported formats & troubleshooting[/dim]")
+    menu.add_row("[4]", "⚙️  [bold green]Profile & Resolution Settings[/bold green] — [dim]Change target phone (Sanee S1123, Nokia, Sub-QCIF, QVGA)[/dim]")
+    menu.add_row("[5]", f"🎨 [bold orange1]Switch UI Theme[/bold orange1] — [dim]Current: {thm['name']}[/dim]")
+    menu.add_row("[6]", "🚀 [bold red]Hardware Benchmark Test[/bold red] — [dim]Live 15s speed test on CPU & Intel HD 4400 GPU[/dim]")
+    menu.add_row("[7]", "🌐 [bold blue]Open Web Browser Interface[/bold blue] — [dim]Launch graphical web UI at http://localhost:5000[/dim]")
+    menu.add_row("[8]", "💡 [bold white]Button Phone Guide & Tips[/bold white] — [dim]Folder layout, supported formats & troubleshooting[/dim]")
     menu.add_row("[0]", "↩️  [dim white]Back to 3GPBOX Home[/dim white]")
 
     p_info = converter_core.PRESETS.get(CURRENT_PRESET, {})
     console.print(Panel(
         menu,
         title=f"[bold white]🛠️ 3GP STUDIO CONTROL PANEL (Profile: {p_info.get('name', 'Sanee S1123 Lite')})[/bold white]",
-        border_style="#38bdf8",
+        border_style=thm["prompt"],
         box=box.ROUNDED
     ))
 
-    choice = input("\n👉 Select Option (0-7): ").strip()
+    choice = input("\n👉 Select Option (0-8): ").strip()
     if choice == "1":
         action_local_files()
     elif choice == "2":
@@ -441,16 +554,43 @@ def show_extended_menu():
     elif choice == "4":
         action_studio_settings()
     elif choice == "5":
-        action_benchmark()
+        action_theme_picker()
     elif choice == "6":
-        action_open_web()
+        action_benchmark()
     elif choice == "7":
+        action_open_web()
+    elif choice == "8":
         action_guide()
+
+def action_theme_picker():
+    """Allows user to select from available themes."""
+    global CURRENT_THEME
+    clear_screen()
+    console.print(Panel(
+        "[bold white]Select a UI Theme:[/bold white]\n\n"
+        "1. 🍊 [bold #f97316]Cyber Orange (Sunset Blaze)[/bold #f97316] [Default]\n"
+        "2. 💜 [bold #c084fc]MovieBox Lilac (Cyber Purple)[/bold #c084fc]\n"
+        "3. 🟢 [bold #4ade80]Matrix Green (Hacker Edition)[/bold #4ade80]\n"
+        "4. 🔵 [bold #38bdf8]Neon Cyan / Blue (Cyberpunk Night)[/bold #38bdf8]\n"
+        "0. Back",
+        title="🎨 THEME SELECTOR",
+        border_style="#f97316",
+        box=box.ROUNDED
+    ))
+    ch = input("\n👉 Choice (0-4): ").strip()
+    mapping = {"1": "orange", "2": "lilac", "3": "matrix", "4": "cyberpunk"}
+    if ch in mapping:
+        CURRENT_THEME = mapping[ch]
+        console.print(f"[bold green]✓ Activated: {THEMES[CURRENT_THEME]['name']}![/bold green]")
+        time.sleep(1)
 
 def action_youtube_turbo(passed_urls):
     """Downloads & turbo converts all queued links/files with live progress."""
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     ffmpeg_bin = converter_core.find_ffmpeg()
@@ -466,7 +606,7 @@ def action_youtube_turbo(passed_urls):
     ))
 
     for idx, item in enumerate(passed_urls, 1):
-        console.print(f"\n[bold #38bdf8]─── Item [{idx}/{len(passed_urls)}] ──────────────────────────────────────────[/bold #38bdf8]")
+        console.print(f"\n[bold {thm['prompt']}]─── Item [{idx}/{len(passed_urls)}] ──────────────────────────────────────────[/bold {thm['prompt']}]")
         
         final_mp4 = None
         current_title = "Video"
@@ -479,9 +619,9 @@ def action_youtube_turbo(passed_urls):
             current_title = Path(item).stem
             v_info = converter_core.get_video_info(ffmpeg_bin, final_mp4)
             duration = v_info.get("duration", 0)
-            console.print(f"  [dim cyan]⚡ Local file: '{current_title}' (No download needed)[/dim cyan]")
+            console.print(f"  [dim {thm['tag']}]⚡ Local file: '{current_title}' (No download needed)[/dim {thm['tag']}]")
         else:
-            console.print(f"  [bold white]🔗 YouTube URL:[/bold white] [underline cyan]{item}[/underline cyan]")
+            console.print(f"  [bold white]🔗 YouTube URL:[/bold white] [underline {thm['prompt']}]{item}[/underline {thm['prompt']}]")
             
             with Progress(
                 SpinnerColumn(spinner_name="line", style="cyan"),
@@ -549,7 +689,7 @@ def action_youtube_turbo(passed_urls):
             TextColumn(f"[bold green]⚡ Turbo 3GP ({dur_str})"),
             BarColumn(bar_width=28, style="dim green", complete_style="bright_green"),
             TaskProgressColumn(),
-            TextColumn("[bold cyan]{task.fields[speed]}"),
+            TextColumn(f"[bold {thm['prompt']}]{{task.fields[speed]}}"),
             TimeRemainingColumn(),
             console=console
         ) as conv_prog:
@@ -601,12 +741,12 @@ def action_youtube_turbo(passed_urls):
 
     if results:
         table = Table(title="🎉 BATCH CONVERSION SUMMARY", box=box.ROUNDED, border_style="bright_green")
-        table.add_column("#", style="cyan", justify="center", width=4)
+        table.add_column("#", style=thm['prompt'], justify="center", width=4)
         table.add_column("Video Title", style="bold white", max_width=35)
         table.add_column("Duration", style="yellow", justify="center")
         table.add_column("DL Time", style="blue", justify="right")
         table.add_column("Conv Time", style="bold green", justify="right")
-        table.add_column("Speed", style="bold cyan", justify="right")
+        table.add_column("Speed", style=f"bold {thm['prompt']}", justify="right")
         table.add_column("3GP Size", style="magenta", justify="right")
 
         for idx, r in enumerate(results, 1):
@@ -635,7 +775,10 @@ def action_youtube_turbo(passed_urls):
 def action_local_files():
     """Batch converts local files or directories."""
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     console.print(Panel(
@@ -677,7 +820,10 @@ def action_local_files():
 def action_sdcard_transfer():
     """Detects and transfers converted files to MicroSD card."""
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     drives = get_removable_drives()
@@ -720,7 +866,10 @@ def action_sdcard_transfer():
 def action_explorer():
     """Explores, plays, or deletes converted 3GP files."""
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     files = sorted(OUTPUT_DIR.glob("*.3gp"), key=os.path.getmtime, reverse=True)
@@ -729,8 +878,8 @@ def action_explorer():
         input("\nPress ENTER to return...")
         return
 
-    table = Table(title=f"🎬 3GP OUTPUT GALLERY ({len(files)} Videos)", box=box.ROUNDED, border_style="cyan")
-    table.add_column("#", style="cyan", justify="center", width=4)
+    table = Table(title=f"🎬 3GP OUTPUT GALLERY ({len(files)} Videos)", box=box.ROUNDED, border_style=thm["prompt"])
+    table.add_column("#", style=thm["prompt"], justify="center", width=4)
     table.add_column("File Name", style="bold white", max_width=40)
     table.add_column("Size (MB)", style="green", justify="right")
     table.add_column("Created", style="dim white")
@@ -771,7 +920,10 @@ def action_studio_settings():
     """Configures target resolution and profiles."""
     global CURRENT_PRESET, CURRENT_VOLUME, CURRENT_SCALE
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     console.print(Panel(
@@ -779,7 +931,7 @@ def action_studio_settings():
         f"[bold white]Volume Boost:[/bold white] [bold green]{CURRENT_VOLUME}x[/bold green]\n"
         f"[bold white]Scaling Mode:[/bold white] [bold yellow]{CURRENT_SCALE.upper()}[/bold yellow]",
         title="⚙️ STUDIO PREFERENCES",
-        border_style="magenta",
+        border_style=thm["prompt"],
         box=box.ROUNDED
     ))
 
@@ -823,7 +975,10 @@ def action_studio_settings():
 def action_benchmark():
     """Runs a 15-second encode speed benchmark."""
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     console.print(Panel(
@@ -885,7 +1040,10 @@ def action_open_web():
 def action_guide():
     """Shows button phone compatibility guide."""
     clear_screen()
-    logo = Text(ASCII_3GPBOX, style="bold #c084fc")
+    thm = THEMES.get(CURRENT_THEME, THEMES["orange"])
+    logo = Text()
+    for line, col in zip(ASCII_LOGO_LINES, thm["gradient"]):
+        logo.append(line + "\n", style=f"bold {col}")
     console.print(Align.center(logo))
 
     console.print(Panel(
@@ -920,7 +1078,7 @@ def main():
         action = interactive_queue_input(queue)
 
         if action == "QUIT":
-            console.print("\n[bold cyan]⚡ Exiting 3GPBOX. Goodbye! 👋[/bold cyan]\n")
+            console.print("\n[bold #f97316]⚡ Exiting 3GPBOX. Goodbye! 👋[/bold #f97316]\n")
             break
         elif action == "START":
             if queue:

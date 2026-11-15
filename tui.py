@@ -14,10 +14,16 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
+try:
+    import msvcrt
+except ImportError:
+    msvcrt = None
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.align import Align
+from rich.live import Live
 from rich.progress import (
     Progress,
     SpinnerColumn,
@@ -63,6 +69,26 @@ ASCII_3GPBOX = r"""
 def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
 
+def get_clipboard_text() -> str:
+    """Safely retrieves text from Windows clipboard via Win32 API."""
+    if os.name != "nt":
+        return ""
+    try:
+        ctypes.windll.user32.OpenClipboard(0)
+        try:
+            if ctypes.windll.user32.IsClipboardFormatAvailable(13):  # CF_UNICODETEXT
+                h = ctypes.windll.user32.GetClipboardData(13)
+                p = ctypes.windll.kernel32.GlobalLock(h)
+                try:
+                    return ctypes.c_wchar_p(p).value or ""
+                finally:
+                    ctypes.windll.kernel32.GlobalUnlock(h)
+        finally:
+            ctypes.windll.user32.CloseClipboard()
+    except Exception:
+        pass
+    return ""
+
 def get_removable_drives():
     """Detects connected removable drives (SD cards, USB drives) on Windows."""
     drives = []
@@ -74,7 +100,6 @@ def get_removable_drives():
             if bitmask & 1:
                 root = f"{letter}:\\"
                 dtype = ctypes.windll.kernel32.GetDriveTypeW(root)
-                # DRIVE_REMOVABLE = 2, DRIVE_FIXED = 3
                 if dtype in (2, 3) and letter not in ("C", "D"):
                     try:
                         usage = shutil.disk_usage(root)
@@ -94,8 +119,8 @@ def get_removable_drives():
         pass
     return drives
 
-def render_moviebox_home(queue, flash_message=None):
-    """Renders the MovieBox-TUI centered workstation interface."""
+def build_home_view(queue, input_text, cursor_state=True, flash_message=None):
+    """Builds the single coherent renderable containing the banner, interactive box, queue, and actions."""
     term_w = console.size.width
     box_w = min(74, max(52, term_w - 6))
 
@@ -103,33 +128,48 @@ def render_moviebox_home(queue, flash_message=None):
     logo = Text(ASCII_3GPBOX, style="bold #c084fc")
     version_tag = Text("v2.4.0 — Turbo 3GP Workstation\n", style="dim #94a3b8")
 
-    # 2. Centered Search / Input Box (Exact MovieBox styling)
+    # 2. Interactive Input Box with typing and blinking cursor DIRECTLY inside!
     inner_grid = Table.grid(expand=True)
     inner_grid.add_column(justify="left")
     inner_grid.add_column(justify="right")
 
-    if not queue:
-        placeholder = "Paste YouTube or video link here..."
-        badge_text = "[3GPBOX • ↵ Add]"
+    cursor_char = "█" if cursor_state else " "
+    max_disp_w = box_w - 24
+
+    if not input_text:
+        content = Text.assemble(
+            ("❯ ", "bold #22d3ee"),
+            (cursor_char, "bold #38bdf8"),
+            (" Paste YouTube or video link here...", "dim #64748b")
+        )
     else:
-        placeholder = "Paste next link (or press ENTER to start)..."
-        badge_text = f"[Queue: {len(queue)} • ↵ Add]"
+        disp = input_text if len(input_text) <= max_disp_w else "..." + input_text[-(max_disp_w - 3):]
+        content = Text.assemble(
+            ("❯ ", "bold #22d3ee"),
+            (disp, "bold white"),
+            (cursor_char, "bold #38bdf8")
+        )
 
-    inner_grid.add_row(
-        Text.assemble(("❯ ", "bold #22d3ee"), (placeholder, "dim white")),
-        Text(badge_text, style="bold #818cf8")
+    badge_text = f"[Queue: {len(queue)} • ↵ Add]"
+    inner_grid.add_row(content, Text(badge_text, style="bold #818cf8"))
+
+    input_panel = Panel(
+        inner_grid,
+        border_style="#38bdf8" if input_text else "#6366f1",
+        box=box.ROUNDED,
+        width=box_w
     )
-    input_panel = Panel(inner_grid, border_style="#6366f1", box=box.ROUNDED, width=box_w)
 
-    # Active profile details
+    # 3. Queue Section
     p_info = converter_core.PRESETS.get(CURRENT_PRESET, {})
-    p_name = p_info.get("name", "Sanee S1123 Lite")
+    raw_p_name = p_info.get("name", "Sanee S1123 Lite")
+    p_name = raw_p_name.split("(")[0].strip() if "(" in raw_p_name else raw_p_name
     p_res = p_info.get("resolution", "176x144")
-    profile_badge = f"{p_name} ({p_res})"
+    profile_badge = f"{p_name} • {p_res}"
 
-    # 3. Queue Section (Like MovieBox Favorites)
     col1_w = int(box_w * 0.62)
     col2_w = box_w - col1_w - 4
+
     q_table = Table(
         box=box.SIMPLE_HEAD,
         expand=False,
@@ -148,7 +188,6 @@ def render_moviebox_home(queue, flash_message=None):
         )
     else:
         for idx, item in enumerate(queue, 1):
-            # Format item label (clean url or filename)
             if item.startswith("http"):
                 short_text = item if len(item) <= (col1_w - 6) else item[:col1_w - 9] + "..."
             else:
@@ -165,15 +204,204 @@ def render_moviebox_home(queue, flash_message=None):
         ("[q]", "bold #94a3b8"), (" Quit", "white")
     )
 
-    console.print(Align.center(logo))
-    console.print(Align.center(version_tag))
-
+    container = Table.grid(expand=False)
+    container.add_row(Align.center(logo))
+    container.add_row(Align.center(version_tag))
     if flash_message:
-        console.print(Align.center(Text.from_markup(f"{flash_message}\n")))
+        container.add_row(Align.center(Text.from_markup(f"{flash_message}\n")))
+    container.add_row(Align.center(input_panel))
+    container.add_row(Align.center(q_table))
+    container.add_row(Align.center(Text("\n")))
+    container.add_row(Align.center(actions))
 
-    console.print(Align.center(input_panel))
-    console.print(Align.center(q_table))
-    console.print("\n", Align.center(actions))
+    return container
+
+def process_single_input(cmd: str, queue: list) -> tuple:
+    """
+    Processes user input text.
+    Returns (action_code, flash_message).
+    action_code can be None, 'START', 'QUIT', 'MENU', 'SDCARD', 'SETTINGS', 'BENCHMARK', 'LOCAL', 'WEB', 'GUIDE'.
+    """
+    cmd = cmd.strip()
+    if not cmd:
+        if queue:
+            return "START", None
+        return None, "[bold yellow]⚠️ Queue is empty! Paste a YouTube link or video path first.[/bold yellow]"
+
+    cmd_lower = cmd.lower()
+
+    if cmd_lower in ("q", "quit", "exit"):
+        return "QUIT", None
+    elif cmd_lower in ("start", "go", "run"):
+        if queue:
+            return "START", None
+        return None, "[bold yellow]⚠️ Queue is empty! Paste a link first.[/bold yellow]"
+    elif cmd_lower in ("c", "clear"):
+        queue.clear()
+        return None, "[bold red]🗑️ Queue cleared.[/bold red]"
+    elif cmd_lower.startswith("d ") and cmd[2:].strip().isdigit():
+        idx = int(cmd[2:].strip())
+        if 1 <= idx <= len(queue):
+            queue.pop(idx - 1)
+            return None, f"[bold yellow]✓ Removed item #{idx}[/bold yellow]"
+        return None, f"[bold red]✗ Invalid item #{idx}[/bold red]"
+    elif cmd_lower in ("m", "menu", "help"):
+        return "MENU", None
+    elif cmd_lower in ("s", "sd"):
+        return "SDCARD", None
+    elif cmd_lower in ("p", "profile", "settings"):
+        return "SETTINGS", None
+    elif cmd_lower in ("b", "bench", "benchmark"):
+        return "BENCHMARK", None
+    elif cmd_lower in ("l", "local"):
+        return "LOCAL", None
+    elif cmd_lower in ("w", "web"):
+        return "WEB", None
+    elif cmd_lower in ("g", "guide"):
+        return "GUIDE", None
+
+    # Check for URLs
+    extracted = yt3gp.extract_urls(cmd)
+    if extracted:
+        added_n = 0
+        for u in extracted:
+            if u not in queue:
+                queue.append(u)
+                added_n += 1
+        if added_n == 1:
+            return None, f"[bold green]✓ Link added to queue! ({len(queue)} in queue)[/bold green]"
+        elif added_n > 1:
+            return None, f"[bold green]✓ Added {added_n} links to queue! ({len(queue)} in queue)[/bold green]"
+        else:
+            return None, "[bold yellow]ℹ️ Link is already in queue.[/bold yellow]"
+
+    # Check for local video path / folder
+    clean_path = cmd.strip("\"'")
+    if os.path.exists(clean_path):
+        p = Path(clean_path)
+        valid_exts = (".mp4", ".mkv", ".avi", ".mov", ".flv", ".webm", ".wmv", ".ts")
+        if p.is_file() and p.suffix.lower() in valid_exts:
+            if str(p) not in queue:
+                queue.append(str(p))
+                return None, f"[bold green]✓ Added local video '{p.name}' to queue! ({len(queue)} in queue)[/bold green]"
+            else:
+                return None, "[bold yellow]ℹ️ File is already in queue.[/bold yellow]"
+        elif p.is_dir():
+            found_vids = [f for f in p.glob("*") if f.is_file() and f.suffix.lower() in valid_exts]
+            added_c = 0
+            for fv in found_vids:
+                if str(fv) not in queue:
+                    queue.append(str(fv))
+                    added_c += 1
+            return None, f"[bold green]✓ Added {added_c} videos from '{p.name}' to queue! ({len(queue)} in queue)[/bold green]"
+
+    return None, f"[bold yellow]⚠️ Unrecognized link or command: '{cmd[:28]}'. Type 'm' for Menu.[/bold yellow]"
+
+def interactive_queue_input(queue: list) -> str:
+    """
+    Ultra-slick Live interactive input directly inside the centered MovieBox box.
+    Uses msvcrt on Windows console for instant typing feedback and blinking cursor.
+    Falls back gracefully to console.input() if not in a real interactive terminal.
+    """
+    input_text = ""
+    cursor_state = True
+    flash_msg = None
+    last_blink = time.time()
+
+    clear_screen()
+
+    # Fallback mode for non-interactive / redirected console
+    if not (sys.stdin.isatty() and msvcrt is not None):
+        while True:
+            clear_screen()
+            console.print(build_home_view(queue, input_text, True, flash_msg))
+            flash_msg = None
+            try:
+                cmd = input("\n👉 Paste Link / Command: ").strip()
+            except (KeyboardInterrupt, EOFError):
+                return "QUIT"
+            action, msg = process_single_input(cmd, queue)
+            if msg:
+                flash_msg = msg
+            if action:
+                return action
+
+    # Real interactive loop: Live box with typing & blinking cursor inside!
+    with Live(
+        build_home_view(queue, input_text, cursor_state, flash_msg),
+        console=console,
+        screen=False,
+        auto_refresh=False
+    ) as live:
+        live.refresh()
+        while True:
+            now = time.time()
+            if now - last_blink >= 0.5:
+                cursor_state = not cursor_state
+                last_blink = now
+                live.update(build_home_view(queue, input_text, cursor_state, flash_msg), refresh=True)
+
+            if msvcrt.kbhit():
+                ch = msvcrt.getwch()
+
+                # ENTER
+                if ch in ("\r", "\n"):
+                    cmd = input_text
+                    input_text = ""
+                    action, msg = process_single_input(cmd, queue)
+                    if msg:
+                        flash_msg = msg
+                    else:
+                        flash_msg = None
+                    if action:
+                        return action
+                    cursor_state = True
+                    live.update(build_home_view(queue, input_text, cursor_state, flash_msg), refresh=True)
+                    continue
+
+                # BACKSPACE
+                elif ch in ("\x08", "\x7f"):
+                    if input_text:
+                        input_text = input_text[:-1]
+                        live.update(build_home_view(queue, input_text, cursor_state, flash_msg), refresh=True)
+                    continue
+
+                # Ctrl+C or ESC
+                elif ch in ("\x03", "\x1b"):
+                    if input_text:
+                        input_text = ""
+                        live.update(build_home_view(queue, input_text, cursor_state, flash_msg), refresh=True)
+                    else:
+                        return "QUIT"
+                    continue
+
+                # Ctrl+V (Paste clipboard)
+                elif ch == "\x16":
+                    clip = get_clipboard_text()
+                    if clip:
+                        input_text += clip.strip()
+                        live.update(build_home_view(queue, input_text, cursor_state, flash_msg), refresh=True)
+                    continue
+
+                # Special keys (Arrows, Home, End)
+                elif ch in ("\x00", "\xe0"):
+                    if msvcrt.kbhit():
+                        _ = msvcrt.getwch()
+                    continue
+
+                # Normal character
+                else:
+                    input_text += ch
+                    # Ingest any rapid buffered characters (right-click or stream paste)
+                    while msvcrt.kbhit():
+                        nxt = msvcrt.getwch()
+                        if nxt in ("\r", "\n"):
+                            break
+                        input_text += nxt
+
+                    live.update(build_home_view(queue, input_text, cursor_state, flash_msg), refresh=True)
+            else:
+                time.sleep(0.04)
 
 def show_extended_menu():
     """Shows the full secondary control menu when user types 'm'."""
@@ -245,7 +473,6 @@ def action_youtube_turbo(passed_urls):
         duration = 0
         dl_time = 0.0
 
-        # Check if item is already a local video file
         is_local = os.path.exists(item) and os.path.isfile(item)
         if is_local:
             final_mp4 = item
@@ -254,7 +481,6 @@ def action_youtube_turbo(passed_urls):
             duration = v_info.get("duration", 0)
             console.print(f"  [dim cyan]⚡ Local file: '{current_title}' (No download needed)[/dim cyan]")
         else:
-            # 1. YouTube Download Stage
             console.print(f"  [bold white]🔗 YouTube URL:[/bold white] [underline cyan]{item}[/underline cyan]")
             
             with Progress(
@@ -310,7 +536,6 @@ def action_youtube_turbo(passed_urls):
         if not final_mp4 or not os.path.exists(final_mp4):
             continue
 
-        # 2. Conversion Stage
         safe_title = "".join(c for c in current_title if c.isalnum() or c in (" ", "-", "_", "[", "]")).strip()
         if not safe_title:
             safe_title = Path(final_mp4).stem
@@ -352,14 +577,12 @@ def action_youtube_turbo(passed_urls):
 
         console.print(f"  [bold green]✓ 3GP CONVERTED IN {conv_time:.1f}s ({avg_speed:.0f}x speed) -> {out_size_mb:.2f} MB[/bold green]")
 
-        # Copy to hisss if exists
         if HISSS_DIR.exists():
             try:
                 shutil.copy2(out_3gp, str(hisss_out))
             except Exception:
                 pass
 
-        # Clean up raw downloaded MP4 (do not delete if user passed an original local file)
         if not is_local and os.path.exists(final_mp4):
             try:
                 os.remove(final_mp4)
@@ -376,7 +599,6 @@ def action_youtube_turbo(passed_urls):
             "path": out_3gp
         })
 
-    # Summary
     if results:
         table = Table(title="🎉 BATCH CONVERSION SUMMARY", box=box.ROUNDED, border_style="bright_green")
         table.add_column("#", style="cyan", justify="center", width=4)
@@ -397,7 +619,6 @@ def action_youtube_turbo(passed_urls):
         console.print(table)
         console.print(f"\n[bold green]⚡ All {len(results)} item(s) processed in {time.time()-total_start:.1f} seconds total![/bold green]")
 
-        # Auto-detect SD Card
         removable = get_removable_drives()
         if removable:
             console.print(f"\n[bold yellow]💾 Detected External/SD Card Drive: {removable[0]['root']} ({removable[0]['free_gb']:.1f} GB Free)[/bold yellow]")
@@ -672,7 +893,7 @@ def action_guide():
         "বাটন ফোনের চিপসেট (MediaTek MT6261, Spreadtrum SC6531) কেবল 176×144 (QCIF) রেজোলিউশন,\n"
         "15 FPS ফ্রেমরেট এবং AMR-NB (8000 Hz Mono) অডিও ডিকোড করতে পারে।\n\n"
         "[bold cyan]২. মেমোরি কার্ডে (MicroSD) কীভাবে রাখবেন?[/bold cyan]\n"
-        "১. কার্ড রিডারে মেমোরi কার্ড লাগিয়ে পিসিতে লাগান।\n"
+        "১. কার্ড রিডারে মেমোরি কার্ড লাগিয়ে পিসিতে লাগান।\n"
         "২. 3GPBOX এ [bold green]'s'[/bold green] টাইপ করলে স্বয়ংক্রিয়ভাবে মেমোরি কার্ডের 'Videos' ফোল্ডারে ফাইল কপি হয়ে যাবে।\n"
         "৩. ফোনে মেমোরি কার্ড লাগিয়ে ফোনের 'Video Player' থেকে চালান।\n\n"
         "[bold cyan]৩. যদি 'Unsupported Format' দেখায়?[/bold cyan]\n"
@@ -694,134 +915,31 @@ def main():
             return
 
     queue = []
-    flash_msg = None
 
     while True:
-        clear_screen()
-        render_moviebox_home(queue, flash_message=flash_msg)
-        flash_msg = None
+        action = interactive_queue_input(queue)
 
-        term_w = console.size.width
-        box_w = min(74, max(52, term_w - 6))
-        pad = " " * max(0, (term_w - box_w) // 2)
-
-        try:
-            prompt_str = f"{pad}[bold #22d3ee]❯ [/bold #22d3ee][bold white]"
-            user_input = console.input(prompt_str).strip()
-        except (KeyboardInterrupt, EOFError):
+        if action == "QUIT":
             console.print("\n[bold cyan]⚡ Exiting 3GPBOX. Goodbye! 👋[/bold cyan]\n")
             break
-
-        # User pressed ENTER without typing anything
-        if not user_input:
+        elif action == "START":
             if queue:
                 action_youtube_turbo(queue)
                 queue.clear()
-            else:
-                flash_msg = "[bold yellow]⚠️ Queue is empty! Paste a YouTube link or video path first.[/bold yellow]"
-            continue
-
-        cmd = user_input.strip()
-        cmd_lower = cmd.lower()
-
-        # Exit
-        if cmd_lower in ("q", "exit", "quit"):
-            console.print("\n[bold cyan]⚡ Exiting 3GPBOX. Goodbye! 👋[/bold cyan]\n")
-            break
-
-        # Clear queue
-        if cmd_lower in ("c", "clear"):
-            queue.clear()
-            flash_msg = "[bold red]🗑️ Queue cleared.[/bold red]"
-            continue
-
-        # Explicit start
-        if cmd_lower in ("start", "go", "run"):
-            if queue:
-                action_youtube_turbo(queue)
-                queue.clear()
-            else:
-                flash_msg = "[bold yellow]⚠️ Queue is empty! Paste a link first.[/bold yellow]"
-            continue
-
-        # Delete single item: d 1, d 2
-        if cmd_lower.startswith("d ") and cmd[2:].strip().isdigit():
-            idx = int(cmd[2:].strip())
-            if 1 <= idx <= len(queue):
-                removed = queue.pop(idx - 1)
-                flash_msg = f"[bold yellow]✓ Removed item #{idx}[/bold yellow]"
-            else:
-                flash_msg = f"[bold red]✗ Invalid item #{idx}[/bold red]"
-            continue
-
-        # Extended Menu
-        if cmd_lower in ("m", "menu", "help"):
+        elif action == "MENU":
             show_extended_menu()
-            continue
-
-        # Shortcuts to other features
-        if cmd_lower in ("s", "sd"):
+        elif action == "SDCARD":
             action_sdcard_transfer()
-            continue
-
-        if cmd_lower in ("p", "profile", "settings"):
+        elif action == "SETTINGS":
             action_studio_settings()
-            continue
-
-        if cmd_lower in ("b", "bench", "benchmark"):
+        elif action == "BENCHMARK":
             action_benchmark()
-            continue
-
-        if cmd_lower in ("l", "local"):
+        elif action == "LOCAL":
             action_local_files()
-            continue
-
-        if cmd_lower in ("w", "web"):
+        elif action == "WEB":
             action_open_web()
-            continue
-
-        if cmd_lower in ("g", "guide"):
+        elif action == "GUIDE":
             action_guide()
-            continue
-
-        # Check if user entered URLs (can be single or multiple separated by space/commas)
-        extracted = yt3gp.extract_urls(cmd)
-        if extracted:
-            new_added = 0
-            for u in extracted:
-                if u not in queue:
-                    queue.append(u)
-                    new_added += 1
-            if new_added == 1:
-                flash_msg = f"[bold green]✓ Link added to queue! ({len(queue)} in queue)[/bold green]"
-            elif new_added > 1:
-                flash_msg = f"[bold green]✓ Added {new_added} links to queue! ({len(queue)} in queue)[/bold green]"
-            else:
-                flash_msg = "[bold yellow]ℹ️ Link is already in queue.[/bold yellow]"
-            continue
-
-        # Check if user entered a local file or directory
-        clean_path = cmd.strip("\"'")
-        if os.path.exists(clean_path):
-            p = Path(clean_path)
-            valid_exts = (".mp4", ".mkv", ".avi", ".mov", ".flv", ".webm", ".wmv", ".ts")
-            if p.is_file() and p.suffix.lower() in valid_exts:
-                if str(p) not in queue:
-                    queue.append(str(p))
-                    flash_msg = f"[bold green]✓ Added local video '{p.name}' to queue! ({len(queue)} in queue)[/bold green]"
-                else:
-                    flash_msg = "[bold yellow]ℹ️ File is already in queue.[/bold yellow]"
-            elif p.is_dir():
-                found_vids = [f for f in p.glob("*") if f.is_file() and f.suffix.lower() in valid_exts]
-                added_c = 0
-                for fv in found_vids:
-                    if str(fv) not in queue:
-                        queue.append(str(fv))
-                        added_c += 1
-                flash_msg = f"[bold green]✓ Added {added_c} videos from '{p.name}' to queue! ({len(queue)} in queue)[/bold green]"
-            continue
-
-        flash_msg = f"[bold yellow]⚠️ Unrecognized link or command: '{cmd[:30]}'. Type 'm' for Menu.[/bold yellow]"
 
 if __name__ == "__main__":
     main()
